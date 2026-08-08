@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+// Pure, dependency-free rules module: safe to import statically. Importing it
+// dynamically made the SSR bundler build a namespace object with the
+// `__exportAll` helper, which threw at module load in the Node output.
+import { soldCountDelta } from "@/server/persistence/snapshot-rules";
+
 /**
  * GET /api/labs/products/:productId/history
  * Returns the persisted product and its snapshots ordered by observedAt ASC,
@@ -10,13 +15,10 @@ export const Route = createFileRoute("/api/labs/products/$productId/history")({
     handlers: {
       GET: async ({ params }) => {
         try {
-          // One dynamic import per statement: combining them inside Promise.all
-          // makes the SSR bundler synthesize namespace objects across chunks
-          // (`__exportAll` helper), which breaks at runtime in the Node output.
-          const persistence = await import("@/server/persistence/index.server");
-          const rules = await import("@/server/persistence/snapshot-rules");
-          const soldCountDelta = rules.soldCountDelta;
-          const store = await persistence.getProductStore();
+          // Only the store (which may load the pg driver) stays dynamic so it
+          // never reaches the client bundle.
+          const { getProductStore } = await import("@/server/persistence/index.server");
+          const store = await getProductStore();
           const product = await store.getProduct(params.productId);
           if (!product) {
             return Response.json(
