@@ -21,11 +21,17 @@ Camada de leitura (`src/server/read/`), métricas históricas puras
 `GET /api/labs/products/metrics` e LAB `/labs/product-metrics`.
 Sem migration nova. Dashboard, `/products` e mocks intocados.
 
-## Etapa 02B.3 sugerida (NÃO implementada)
+## Etapa 02B.3 — concluída
 
-Decidir quando/como substituir os mocks do Dashboard e de `/products` pelos
-dados reais já legíveis, e só então discutir coleta agendada, percentuais,
-aceleração e Viral Score.
+`/products` e `/products/:id` consomem dados reais persistidos via
+`GET /api/products`. Filtros, ordenação e paginação server-side implementados.
+O Dashboard continua mockado.
+
+## Etapa 02B.4 sugerida (NÃO implementada)
+
+Migrar o Dashboard para os dados reais após validação de `/products` em
+produção; só depois discutir coleta agendada, percentuais, aceleração,
+tendência e Viral Score.
 
 ## Pendências herdadas
 
