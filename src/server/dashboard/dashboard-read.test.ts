@@ -141,6 +141,10 @@ describe("DashboardReadService", () => {
         spy.calls.push("listProductsWithMetrics");
         return repository.listProductsWithMetrics(limit);
       },
+      listProductsByIds: (ids) => {
+        spy.calls.push("listProductsByIds");
+        return repository.listProductsByIds(ids);
+      },
       listProductsPage: (query) => {
         spy.calls.push("listProductsPage");
         return repository.listProductsPage(query);
