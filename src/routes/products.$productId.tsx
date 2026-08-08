@@ -20,6 +20,7 @@ import {
   formatNumber,
   orDash,
 } from "@/lib/real-format";
+import { discoveryService } from "@/services/discovery.service";
 import { realProductService } from "@/services/real-product.service";
 
 export const Route = createFileRoute("/products/$productId")({
