@@ -78,11 +78,13 @@ export const Route = createFileRoute("/api/labs/products/ingest")({
         }
 
         try {
-          const [{ getProductStore }, { ProductIngestionService }] = await Promise.all([
-            import("@/server/persistence/index.server"),
-            import("@/server/ingestion/product-ingestion.service"),
-          ]);
-          const store = await getProductStore();
+          // One dynamic import per statement (see history route): Promise.all
+          // over dynamic imports makes the SSR bundler emit namespace objects
+          // built with the `__exportAll` helper, which fails at runtime.
+          const persistence = await import("@/server/persistence/index.server");
+          const ingestion0 = await import("@/server/ingestion/product-ingestion.service");
+          const ProductIngestionService = ingestion0.ProductIngestionService;
+          const store = await persistence.getProductStore();
           const service = new ProductIngestionService(store);
           const { productIds, ...ingestion } = await service.ingest(items);
 
