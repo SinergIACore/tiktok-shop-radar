@@ -2,7 +2,11 @@ import {
   httpRealProductRepository,
   type RealProductRepository,
 } from "./repositories/http-real-product.repository";
-import type { ProductDetailResponse, ProductListResponse, RealProductQuery } from "@/types/product-view";
+import type {
+  ProductDetailResponse,
+  ProductListResponse,
+  RealProductQuery,
+} from "@/types/product-view";
 
 /**
  * Only entry point the /products UI uses to read persisted (real) products.

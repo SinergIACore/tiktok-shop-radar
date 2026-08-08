@@ -36,7 +36,8 @@ async function getPool(): Promise<PoolLike> {
         Pool?: new (c: object) => PoolLike;
       };
       const Pool = mod.Pool ?? mod.default!.Pool;
-      const ssl = process.env["DATABASE_SSL"] === "true" ? { rejectUnauthorized: false } : undefined;
+      const ssl =
+        process.env["DATABASE_SSL"] === "true" ? { rejectUnauthorized: false } : undefined;
       return new Pool({ connectionString, max: 5, ...(ssl ? { ssl } : {}) });
     })();
   }
@@ -112,7 +113,11 @@ const PRODUCT_COLS = `p.id, p.source, p.source_product_id, p.name, p.thumbnail, 
  * Single query, no N+1: a window function ranks the snapshots per product and
  * the two most recent rows are joined back onto the product.
  */
-const METRICS_QUERY = (whereClause: string, limitClause: string, orderBy = "p.last_seen_at DESC") => `
+const METRICS_QUERY = (
+  whereClause: string,
+  limitClause: string,
+  orderBy = "p.last_seen_at DESC",
+) => `
 WITH ranked AS (
   SELECT s.*,
          row_number() OVER (PARTITION BY s.product_id ORDER BY s.observed_at DESC, s.id DESC) AS rn,
@@ -153,8 +158,10 @@ function buildFilters(query: ProductListQuery) {
   if (query.seller) push("p.seller_name ILIKE $?", `%${query.seller}%`);
   if (query.category) push("p.category = $?", query.category);
   if (query.hasHistory) clauses.push("COALESCE(l.snapshot_count, 0) >= 2");
-  if (query.minPrice !== null && query.minPrice !== undefined) push("l.price >= $?", query.minPrice);
-  if (query.maxPrice !== null && query.maxPrice !== undefined) push("l.price <= $?", query.maxPrice);
+  if (query.minPrice !== null && query.minPrice !== undefined)
+    push("l.price >= $?", query.minPrice);
+  if (query.maxPrice !== null && query.maxPrice !== undefined)
+    push("l.price <= $?", query.maxPrice);
   if (query.minSold !== null && query.minSold !== undefined)
     push("l.sold_count >= $?", query.minSold);
   if (query.minReviews !== null && query.minReviews !== undefined)

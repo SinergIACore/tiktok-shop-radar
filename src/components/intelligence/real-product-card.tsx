@@ -51,7 +51,10 @@ export function RealProductCard({ product }: { product: ProductListViewModel }) 
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
           <Field label="Preço" value={formatMoney(latest?.price ?? null, product.currency)} />
           <Field label="Vendas" value={formatNumber(latest?.soldCount ?? null)} />
-          <Field label="GMV" value={formatMoney(latest?.gmvContribution ?? null, product.currency)} />
+          <Field
+            label="GMV"
+            value={formatMoney(latest?.gmvContribution ?? null, product.currency)}
+          />
           <Field
             label="Δ vendas"
             value={formatDelta(product.metrics.soldCountDelta)}

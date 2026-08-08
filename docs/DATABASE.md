@@ -8,9 +8,9 @@ PostgreSQL puro (sem ORM), acessado pelo driver open source `pg`
 
 Adapters (`src/server/persistence/`):
 
-| Adapter                | Quando é usado                       |
-| ---------------------- | ------------------------------------ |
-| `PostgresProductStore` | `DATABASE_URL` definida (produção)   |
+| Adapter                | Quando é usado                                              |
+| ---------------------- | ----------------------------------------------------------- |
+| `PostgresProductStore` | `DATABASE_URL` definida (produção)                          |
 | `MemoryProductStore`   | sem `DATABASE_URL` (dev sandbox/LAB) e testes automatizados |
 
 A escolha acontece em um único lugar: `src/server/persistence/index.server.ts`.
@@ -25,9 +25,9 @@ tabela `schema_migrations`. Migrations são incrementais (`IF NOT EXISTS`) e nã
 destrutivas; o `.down.sql` correspondente existe para reversão manual fora de
 produção.
 
-| Migration                          | Conteúdo                          |
-| ---------------------------------- | --------------------------------- |
-| `0001_products_and_snapshots.sql`  | `products`, `product_snapshots`   |
+| Migration                         | Conteúdo                        |
+| --------------------------------- | ------------------------------- |
+| `0001_products_and_snapshots.sql` | `products`, `product_snapshots` |
 
 ## Tabela `products` (identidade)
 
@@ -90,12 +90,12 @@ acima ainda **não** alimenta a interface principal.
 
 `src/server/read/` contém a camada de leitura, separada da ingestão:
 
-| Arquivo                        | Papel                                              |
-| ------------------------------ | -------------------------------------------------- |
-| `types.ts`                     | contrato `ProductReadRepository` (somente leitura)  |
-| `postgres-read-repository.ts`  | SELECT com window function (sem N+1)                |
-| `memory-read-repository.ts`    | equivalente sobre o store em memória (dev/testes)   |
-| `index.server.ts`              | escolha do adapter por `DATABASE_URL`               |
+| Arquivo                       | Papel                                              |
+| ----------------------------- | -------------------------------------------------- |
+| `types.ts`                    | contrato `ProductReadRepository` (somente leitura) |
+| `postgres-read-repository.ts` | SELECT com window function (sem N+1)               |
+| `memory-read-repository.ts`   | equivalente sobre o store em memória (dev/testes)  |
+| `index.server.ts`             | escolha do adapter por `DATABASE_URL`              |
 
 Query principal (uma única ida ao banco):
 
@@ -120,15 +120,15 @@ O índice `(product_id, observed_at)` da migration 0001 já atende essa consulta
 Calculadas em `src/server/metrics/product-metrics.ts` (módulo puro) entre os
 dois snapshots mais recentes:
 
-| Métrica                 | Fórmula                                        |
-| ----------------------- | ---------------------------------------------- |
-| `soldCountDelta`        | último − anterior (`sold_count`)               |
-| `gmvDelta`              | último − anterior (`gmv_contribution`)         |
-| `priceDelta`            | último − anterior (`price`)                    |
-| `reviewCountDelta`      | último − anterior (`review_count`)             |
-| `sellerVideoCountDelta` | último − anterior (`seller_video_count`)       |
-| `timeDeltaHours`        | diferença de `observed_at` em horas            |
-| `salesVelocity`         | `soldCountDelta / timeDeltaHours`              |
+| Métrica                 | Fórmula                                  |
+| ----------------------- | ---------------------------------------- |
+| `soldCountDelta`        | último − anterior (`sold_count`)         |
+| `gmvDelta`              | último − anterior (`gmv_contribution`)   |
+| `priceDelta`            | último − anterior (`price`)              |
+| `reviewCountDelta`      | último − anterior (`review_count`)       |
+| `sellerVideoCountDelta` | último − anterior (`seller_video_count`) |
+| `timeDeltaHours`        | diferença de `observed_at` em horas      |
+| `salesVelocity`         | `soldCountDelta / timeDeltaHours`        |
 
 Regras de null: `NULL` nunca vira `0`; se um dos dois valores for `NULL` a
 métrica derivada é `NULL`; `timeDeltaHours <= 0` ⇒ `salesVelocity = NULL`;
@@ -145,3 +145,18 @@ filtros. Ordenações por delta são calculadas em SQL
 (`l.sold_count - v.sold_count`), sempre com `NULLS LAST`.
 
 Nenhuma migration nova foi necessária: os índices de 0001 atendem as consultas.
+
+## Agregados do Dashboard (Etapa 02B.4)
+
+`getDashboardSummary()` roda uma única query com subselects:
+
+| Campo                 | Origem                                                         |
+| --------------------- | -------------------------------------------------------------- |
+| `productsMonitored`   | `COUNT(products)`                                              |
+| `productsWithHistory` | produtos com `COUNT(product_snapshots) >= 2`                   |
+| `snapshotsCollected`  | `COUNT(product_snapshots)`                                     |
+| `lastObservationAt`   | `MAX(product_snapshots.observed_at)`                           |
+| `newProducts24h`      | `products.first_seen_at >= now() - interval '24 hours'`        |
+| `snapshots24h`        | `product_snapshots.observed_at >= now() - interval '24 hours'` |
+
+Nenhuma migration nova: os índices da migration 0001 atendem essas consultas.

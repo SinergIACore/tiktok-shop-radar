@@ -25,8 +25,7 @@ function buildSearchParams(query: RealProductQuery): string {
 
 async function readJson<T>(response: Response): Promise<T> {
   const payload = (await response.json().catch(() => null)) as
-    | (T & { error?: { message?: string } })
-    | null;
+    (T & { error?: { message?: string } }) | null;
   if (!response.ok || !payload) {
     throw new Error(payload?.error?.message ?? "Não foi possível carregar os produtos.");
   }

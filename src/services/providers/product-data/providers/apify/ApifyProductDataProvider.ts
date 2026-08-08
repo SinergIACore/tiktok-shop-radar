@@ -42,11 +42,7 @@ export class ApifyProductDataProvider implements ProductDataProvider {
     const actorId = this.actorId;
 
     if (!token || !actorId) {
-      throw new ProviderError(
-        "not_configured",
-        "Provider de dados não configurado.",
-        503,
-      );
+      throw new ProviderError("not_configured", "Provider de dados não configurado.", 503);
     }
 
     const limit = Math.min(Math.max(params.limit ?? 10, 1), 50);
@@ -92,20 +88,19 @@ export class ApifyProductDataProvider implements ProductDataProvider {
         );
       }
 
-      const items = normalizeProducts(
-        (payload as ExternalProduct[]).slice(0, limit),
-        this.name,
-      );
+      const items = normalizeProducts((payload as ExternalProduct[]).slice(0, limit), this.name);
 
-      return { source: this.name, query: { ...params, limit }, count: items.length, durationMs, items };
+      return {
+        source: this.name,
+        query: { ...params, limit },
+        count: items.length,
+        durationMs,
+        items,
+      };
     } catch (error) {
       if (error instanceof ProviderError) throw error;
       if (error instanceof Error && error.name === "AbortError") {
-        throw new ProviderError(
-          "timeout",
-          `Provider não respondeu em ${timeoutMs}ms.`,
-          504,
-        );
+        throw new ProviderError("timeout", `Provider não respondeu em ${timeoutMs}ms.`, 504);
       }
       throw new ProviderError(
         "provider_error",

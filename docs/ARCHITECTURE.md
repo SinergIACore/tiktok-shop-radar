@@ -161,3 +161,31 @@ statement, sem `Promise.all`), portanto fora do bundle client.
 
 O Dashboard continua usando `productService`/`creativeService` com mocks —
 sua migração é uma etapa separada.
+
+## Etapa 02B.4 — Dashboard com dados reais
+
+```text
+PostgreSQL / Memory
+  → ProductReadRepository (getDashboardSummary + listProductsPage)
+  → DashboardReadService (src/server/dashboard/)
+  → toDashboardResponse (adaptador puro)
+  → GET /api/dashboard
+  → DashboardService → httpDashboardRepository
+  → UI /
+```
+
+Regras: o Dashboard não consulta tabelas nem tipos de banco, não chama o
+provider Apify, não grava e não recalcula métricas (elas vêm de
+`src/server/metrics/product-metrics.ts`). O resumo é uma única query agregada
+(sem N+1) e cada listagem é limitada a 6 itens.
+
+Fonte de dados por tela (indicador contextual `DataSourceBadge`):
+
+| Tela                            | Fonte                |
+| ------------------------------- | -------------------- |
+| `/` (Dashboard)                 | PostgreSQL real      |
+| `/products`, `/products/:id`    | PostgreSQL real      |
+| `/labs/*`                       | PostgreSQL real      |
+| Criativos, Análises, Biblioteca | mocks / demonstração |
+
+O selo global "dados mockados" do cabeçalho foi removido.

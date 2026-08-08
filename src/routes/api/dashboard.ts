@@ -12,9 +12,8 @@ export const Route = createFileRoute("/api/dashboard")({
       GET: async () => {
         try {
           const { getProductReadRepository } = await import("@/server/read/index.server");
-          const { DashboardReadService } = await import(
-            "@/server/dashboard/dashboard-read.service"
-          );
+          const { DashboardReadService } =
+            await import("@/server/dashboard/dashboard-read.service");
           const repository = await getProductReadRepository();
           const data = await new DashboardReadService(repository).load();
           return Response.json(toDashboardResponse(data));

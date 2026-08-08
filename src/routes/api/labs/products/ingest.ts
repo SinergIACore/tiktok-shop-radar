@@ -36,9 +36,8 @@ export const Route = createFileRoute("/api/labs/products/ingest")({
           ? Math.min(Math.max(Math.trunc(parsedLimit), 1), MAX_LAB_LIMIT)
           : 5;
 
-        const { getProductDataProvider } = await import(
-          "@/services/providers/product-data/index.server"
-        );
+        const { getProductDataProvider } =
+          await import("@/services/providers/product-data/index.server");
         const provider = getProductDataProvider();
         if (!provider.isConfigured()) {
           return Response.json(

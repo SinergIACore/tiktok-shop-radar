@@ -1,4 +1,8 @@
-import { DEFAULT_LIST_QUERY, type ProductListSort, type ProductReadRepository } from "../read/types";
+import {
+  DEFAULT_LIST_QUERY,
+  type ProductListSort,
+  type ProductReadRepository,
+} from "../read/types";
 import { DASHBOARD_LIST_LIMIT, type DashboardData } from "./types";
 
 /**

@@ -34,12 +34,7 @@ export interface ProductWithMetrics {
 
 /** Sort keys allowed on /products (Stage 02B.3). No score/trend/forecast. */
 export type ProductListSort =
-  | "soldCount"
-  | "gmv"
-  | "soldCountDelta"
-  | "gmvDelta"
-  | "salesVelocity"
-  | "lastObservedAt";
+  "soldCount" | "gmv" | "soldCountDelta" | "gmvDelta" | "salesVelocity" | "lastObservedAt";
 
 export type SortDirection = "asc" | "desc";
 

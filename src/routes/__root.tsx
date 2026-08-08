@@ -84,8 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "TikRadar AI — Product & Creative Intelligence" },
       {
         name: "description",
-        content:
-          "Plataforma de inteligência de produtos e criativos para TikTok e TikTok Shop.",
+        content: "Plataforma de inteligência de produtos e criativos para TikTok e TikTok Shop.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

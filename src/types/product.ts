@@ -4,13 +4,7 @@
  */
 
 export type ProductCategory =
-  | "beauty"
-  | "home"
-  | "fashion"
-  | "electronics"
-  | "fitness"
-  | "pets"
-  | "kitchen";
+  "beauty" | "home" | "fashion" | "electronics" | "fitness" | "pets" | "kitchen";
 
 export interface ProductMetrics {
   /** 0-100 composite virality indicator (algorithm not implemented yet). */
@@ -38,11 +32,7 @@ export interface Product extends ProductMetrics {
 
 export type TimeRange = "24h" | "3d" | "7d" | "30d";
 
-export type ProductSortKey =
-  | "viralScore"
-  | "growthRate"
-  | "engagementRate"
-  | "creatorCount";
+export type ProductSortKey = "viralScore" | "growthRate" | "engagementRate" | "creatorCount";
 
 export interface ProductQuery {
   range?: TimeRange;

@@ -54,21 +54,20 @@ no EasyPanel (com `DATABASE_URL` já definida no serviço):
 npm run migrate
 ```
 
-
 `.dockerignore` exclui `node_modules`, `.git`, `.env`, `.env.*` (mantendo
 `.env.example`), `dist`, `.output`, `.wrangler`, `coverage`, logs e temporários.
 
 ## EasyPanel
 
-| Item | Valor |
-| --- | --- |
-| Fonte | Git SSH |
-| Repositório | `git@github.com:SinergIACore/tiktok-shop-radar.git` |
-| Branch | `main` |
-| Build path | `/` |
-| Build method | Dockerfile |
-| Dockerfile | `docker/Dockerfile` |
-| Porta | `3000` |
+| Item         | Valor                                               |
+| ------------ | --------------------------------------------------- |
+| Fonte        | Git SSH                                             |
+| Repositório  | `git@github.com:SinergIACore/tiktok-shop-radar.git` |
+| Branch       | `main`                                              |
+| Build path   | `/`                                                 |
+| Build method | Dockerfile                                          |
+| Dockerfile   | `docker/Dockerfile`                                 |
+| Porta        | `3000`                                              |
 
 Variáveis de ambiente server-side (sem valores reais no repositório):
 
