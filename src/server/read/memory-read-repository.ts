@@ -1,6 +1,7 @@
 import { computeProductMetrics, EMPTY_METRICS } from "../metrics/product-metrics";
 import type { MetricSnapshot } from "../metrics/product-metrics";
 import type { ProductStore, StoredProduct, StoredSnapshot } from "../persistence/types";
+import type { DashboardSummary } from "../dashboard/types";
 import { filterProducts, paginate, sortProducts } from "./list-query";
 import type {
   ProductListPage,
@@ -90,5 +91,40 @@ export class MemoryProductReadRepository implements ProductReadRepository {
 
   async listHistory(productId: string): Promise<StoredSnapshot[]> {
     return this.store.listSnapshots(productId);
+  }
+
+  async getDashboardSummary(): Promise<DashboardSummary> {
+    const products = await this.store.listProducts(Number.MAX_SAFE_INTEGER);
+    const since = Date.now() - 24 * 60 * 60 * 1000;
+    const isRecent = (iso: string) => {
+      const time = new Date(iso).getTime();
+      return Number.isFinite(time) && time >= since;
+    };
+
+    let productsWithHistory = 0;
+    let snapshotsCollected = 0;
+    let snapshots24h = 0;
+    let lastObservationAt: string | null = null;
+
+    for (const product of products) {
+      const snapshots = await this.store.listSnapshots(product.id);
+      if (snapshots.length >= 2) productsWithHistory += 1;
+      snapshotsCollected += snapshots.length;
+      for (const snapshot of snapshots) {
+        if (isRecent(snapshot.observedAt)) snapshots24h += 1;
+        if (lastObservationAt === null || snapshot.observedAt > lastObservationAt) {
+          lastObservationAt = snapshot.observedAt;
+        }
+      }
+    }
+
+    return {
+      productsMonitored: products.length,
+      productsWithHistory,
+      snapshotsCollected,
+      lastObservationAt,
+      newProducts24h: products.filter((product) => isRecent(product.firstSeenAt)).length,
+      snapshots24h,
+    };
   }
 }

@@ -1,6 +1,7 @@
 import { computeProductMetrics, EMPTY_METRICS } from "../metrics/product-metrics";
 import type { MetricSnapshot } from "../metrics/product-metrics";
 import { PersistenceError, type StoredSnapshot } from "../persistence/types";
+import type { DashboardSummary } from "../dashboard/types";
 import type {
   ProductListPage,
   ProductListQuery,
@@ -238,5 +239,35 @@ SELECT count(*)::bigint AS total
       commentRate: num(row["comment_rate"]),
       createdAt: iso(row["created_at"]),
     }));
+  }
+
+  /**
+   * Single aggregated query — no N+1, no history loaded.
+   */
+  async getDashboardSummary(): Promise<DashboardSummary> {
+    const pool = await getPool();
+    const { rows } = await pool.query(`
+WITH counts AS (
+  SELECT product_id, count(*) AS c FROM product_snapshots GROUP BY product_id
+)
+SELECT (SELECT count(*) FROM products)::bigint AS products_monitored,
+       (SELECT count(*) FROM counts WHERE c >= 2)::bigint AS products_with_history,
+       (SELECT count(*) FROM product_snapshots)::bigint AS snapshots_collected,
+       (SELECT max(observed_at) FROM product_snapshots) AS last_observation_at,
+       (SELECT count(*) FROM products WHERE first_seen_at >= now() - interval '24 hours')::bigint AS new_products_24h,
+       (SELECT count(*) FROM product_snapshots WHERE observed_at >= now() - interval '24 hours')::bigint AS snapshots_24h`);
+    const row = rows[0] ?? {};
+    const lastObservationAt = row["last_observation_at"];
+    return {
+      productsMonitored: num(row["products_monitored"]) ?? 0,
+      productsWithHistory: num(row["products_with_history"]) ?? 0,
+      snapshotsCollected: num(row["snapshots_collected"]) ?? 0,
+      lastObservationAt:
+        lastObservationAt === null || lastObservationAt === undefined
+          ? null
+          : iso(lastObservationAt),
+      newProducts24h: num(row["new_products_24h"]) ?? 0,
+      snapshots24h: num(row["snapshots_24h"]) ?? 0,
+    };
   }
 }
