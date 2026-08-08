@@ -32,15 +32,12 @@ export const Route = createFileRoute("/api/products/search")({
           ? Math.min(Math.max(Math.trunc(parsedLimit), 1), 50)
           : 10;
 
-        const { getProductDataProvider } = await import(
-          "@/services/providers/product-data/index.server"
-        );
+        const { getProductDataProvider } =
+          await import("@/services/providers/product-data/index.server");
         const provider = getProductDataProvider();
 
         if (!provider.isConfigured()) {
-          console.warn(
-            `[product-data] provider=${provider.name} status=not_configured`,
-          );
+          console.warn(`[product-data] provider=${provider.name} status=not_configured`);
           return Response.json(
             {
               error: {
@@ -73,11 +70,10 @@ export const Route = createFileRoute("/api/products/search")({
             );
           }
           const message = error instanceof Error ? error.message : "Erro desconhecido.";
-          console.error(`[product-data] provider=${provider.name} status=unexpected message=${message}`);
-          return Response.json(
-            { error: { code: "provider_error", message } },
-            { status: 502 },
+          console.error(
+            `[product-data] provider=${provider.name} status=unexpected message=${message}`,
           );
+          return Response.json({ error: { code: "provider_error", message } }, { status: 502 });
         }
       },
     },

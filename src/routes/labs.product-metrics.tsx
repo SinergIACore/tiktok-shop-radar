@@ -54,7 +54,11 @@ async function parse<T>(response: Response): Promise<T> {
 
 /** NULL is never rendered as zero. */
 const show = (value: number | null | undefined, digits = 2) =>
-  value === null || value === undefined ? "—" : Number.isInteger(value) ? String(value) : value.toFixed(digits);
+  value === null || value === undefined
+    ? "—"
+    : Number.isInteger(value)
+      ? String(value)
+      : value.toFixed(digits);
 
 const showDelta = (value: number | null | undefined, digits = 2) =>
   value === null || value === undefined
@@ -178,7 +182,9 @@ function ProductMetricsLab() {
                   </td>
                   <td className="px-3 py-2">{show(item.latest?.price ?? null)}</td>
                   <td className="px-3 py-2">{show(item.latest?.soldCount ?? null)}</td>
-                  <td className={`px-3 py-2 font-medium ${deltaClass(item.metrics.soldCountDelta)}`}>
+                  <td
+                    className={`px-3 py-2 font-medium ${deltaClass(item.metrics.soldCountDelta)}`}
+                  >
                     {showDelta(item.metrics.soldCountDelta)}
                   </td>
                   <td className="px-3 py-2">{show(item.latest?.gmvContribution ?? null)}</td>
@@ -186,7 +192,9 @@ function ProductMetricsLab() {
                     {showDelta(item.metrics.gmvDelta)}
                   </td>
                   <td className="px-3 py-2">{show(item.latest?.reviewCount ?? null)}</td>
-                  <td className={`px-3 py-2 font-medium ${deltaClass(item.metrics.reviewCountDelta)}`}>
+                  <td
+                    className={`px-3 py-2 font-medium ${deltaClass(item.metrics.reviewCountDelta)}`}
+                  >
                     {showDelta(item.metrics.reviewCountDelta)}
                   </td>
                   <td className="px-3 py-2">{show(item.latest?.sellerVideoCount ?? null)}</td>
@@ -198,7 +206,9 @@ function ProductMetricsLab() {
                   <td className="px-3 py-2 font-mono text-xs">
                     {show(item.metrics.timeDeltaHours)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-xs">{show(item.metrics.salesVelocity)}</td>
+                  <td className="px-3 py-2 font-mono text-xs">
+                    {show(item.metrics.salesVelocity)}
+                  </td>
                   <td className="px-3 py-2">
                     <Button
                       variant={selected === item.id ? "default" : "outline"}

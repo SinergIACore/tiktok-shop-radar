@@ -41,27 +41,27 @@ chaves desconhecidas.
 
 **Mapeamento do schema real (Etapa 02A.3):**
 
-| Campo do Actor      | Campo normalizado  |
-| ------------------- | ------------------ |
-| `id` / `productId`  | `id`               |
-| `title`             | `name`             |
-| `mainImage`         | `thumbnail`        |
-| `imageUrls[0]`      | `thumbnail` (fallback) |
-| `productUrl`        | `productUrl`       |
-| `categoryPath`      | `category`         |
-| `currentPrice`      | `price`            |
-| `currency`          | `currency`         |
-| `soldCount`         | `soldCount`        |
-| `rating`            | `rating`           |
-| `reviewCount`       | `reviewCount`      |
-| `sellerName`        | `sellerName`       |
-| `sellerVideoCount`  | `sellerVideoCount` |
-| `gmvContribution`   | `gmvContribution`  |
-| `brand`             | `brand`            |
-| `businessName`      | `businessName`     |
-| `countryCode`       | `countryCode`      |
-| `discountPercent`   | `discountPercent`  |
-| `commentRate`       | `commentRate`      |
+| Campo do Actor     | Campo normalizado      |
+| ------------------ | ---------------------- |
+| `id` / `productId` | `id`                   |
+| `title`            | `name`                 |
+| `mainImage`        | `thumbnail`            |
+| `imageUrls[0]`     | `thumbnail` (fallback) |
+| `productUrl`       | `productUrl`           |
+| `categoryPath`     | `category`             |
+| `currentPrice`     | `price`                |
+| `currency`         | `currency`             |
+| `soldCount`        | `soldCount`            |
+| `rating`           | `rating`               |
+| `reviewCount`      | `reviewCount`          |
+| `sellerName`       | `sellerName`           |
+| `sellerVideoCount` | `sellerVideoCount`     |
+| `gmvContribution`  | `gmvContribution`      |
+| `brand`            | `brand`                |
+| `businessName`     | `businessName`         |
+| `countryCode`      | `countryCode`          |
+| `discountPercent`  | `discountPercent`      |
+| `commentRate`      | `commentRate`          |
 
 `creatorCount` permanece `null`: o Actor não expõe contagem real de criadores
 e `sellerVideoCount` NÃO é usado como substituto.

@@ -80,11 +80,7 @@ function ProductDetailPage() {
   );
 }
 
-function ProductDetail({
-  data,
-}: {
-  data: Awaited<ReturnType<typeof realProductService.getById>>;
-}) {
+function ProductDetail({ data }: { data: Awaited<ReturnType<typeof realProductService.getById>> }) {
   const { product, history } = data;
   const currency = product.currency;
 
@@ -138,7 +134,10 @@ function ProductDetail({
           </div>
 
           <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <Stat label="Preço atual" value={formatMoney(product.latest?.price ?? null, currency)} />
+            <Stat
+              label="Preço atual"
+              value={formatMoney(product.latest?.price ?? null, currency)}
+            />
             <Stat label="Vendas atuais" value={formatNumber(product.latest?.soldCount ?? null)} />
             <Stat label="Rating" value={formatNumber(product.latest?.rating ?? null, 1)} />
             <Stat label="Reviews" value={formatNumber(product.latest?.reviewCount ?? null)} />
@@ -170,10 +169,7 @@ function ProductDetail({
               value={formatDelta(product.metrics.sellerVideoCountDelta)}
               tone={deltaTone(product.metrics.sellerVideoCountDelta)}
             />
-            <Stat
-              label="Intervalo (h)"
-              value={formatNumber(product.metrics.timeDeltaHours, 2)}
-            />
+            <Stat label="Intervalo (h)" value={formatNumber(product.metrics.timeDeltaHours, 2)} />
             <Stat label="Vendas/hora" value={formatNumber(product.metrics.salesVelocity, 2)} />
           </dl>
         </div>

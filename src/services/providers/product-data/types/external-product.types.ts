@@ -55,11 +55,7 @@ export interface ProductSearchResult {
 }
 
 export type ProviderErrorCode =
-  | "not_configured"
-  | "timeout"
-  | "provider_error"
-  | "invalid_response"
-  | "invalid_params";
+  "not_configured" | "timeout" | "provider_error" | "invalid_response" | "invalid_params";
 
 export class ProviderError extends Error {
   readonly code: ProviderErrorCode;

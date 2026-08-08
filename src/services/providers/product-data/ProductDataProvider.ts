@@ -1,7 +1,4 @@
-import type {
-  ProductSearchParams,
-  ProductSearchResult,
-} from "./types/external-product.types";
+import type { ProductSearchParams, ProductSearchResult } from "./types/external-product.types";
 
 /**
  * Contract for any external product data source (Apify, official TikTok Shop

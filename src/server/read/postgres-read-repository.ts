@@ -1,6 +1,7 @@
 import { computeProductMetrics, EMPTY_METRICS } from "../metrics/product-metrics";
 import type { MetricSnapshot } from "../metrics/product-metrics";
 import { PersistenceError, type StoredSnapshot } from "../persistence/types";
+import type { DashboardSummary } from "../dashboard/types";
 import type {
   ProductListPage,
   ProductListQuery,
@@ -35,7 +36,8 @@ async function getPool(): Promise<PoolLike> {
         Pool?: new (c: object) => PoolLike;
       };
       const Pool = mod.Pool ?? mod.default!.Pool;
-      const ssl = process.env["DATABASE_SSL"] === "true" ? { rejectUnauthorized: false } : undefined;
+      const ssl =
+        process.env["DATABASE_SSL"] === "true" ? { rejectUnauthorized: false } : undefined;
       return new Pool({ connectionString, max: 5, ...(ssl ? { ssl } : {}) });
     })();
   }
@@ -111,7 +113,11 @@ const PRODUCT_COLS = `p.id, p.source, p.source_product_id, p.name, p.thumbnail, 
  * Single query, no N+1: a window function ranks the snapshots per product and
  * the two most recent rows are joined back onto the product.
  */
-const METRICS_QUERY = (whereClause: string, limitClause: string, orderBy = "p.last_seen_at DESC") => `
+const METRICS_QUERY = (
+  whereClause: string,
+  limitClause: string,
+  orderBy = "p.last_seen_at DESC",
+) => `
 WITH ranked AS (
   SELECT s.*,
          row_number() OVER (PARTITION BY s.product_id ORDER BY s.observed_at DESC, s.id DESC) AS rn,
@@ -152,8 +158,10 @@ function buildFilters(query: ProductListQuery) {
   if (query.seller) push("p.seller_name ILIKE $?", `%${query.seller}%`);
   if (query.category) push("p.category = $?", query.category);
   if (query.hasHistory) clauses.push("COALESCE(l.snapshot_count, 0) >= 2");
-  if (query.minPrice !== null && query.minPrice !== undefined) push("l.price >= $?", query.minPrice);
-  if (query.maxPrice !== null && query.maxPrice !== undefined) push("l.price <= $?", query.maxPrice);
+  if (query.minPrice !== null && query.minPrice !== undefined)
+    push("l.price >= $?", query.minPrice);
+  if (query.maxPrice !== null && query.maxPrice !== undefined)
+    push("l.price <= $?", query.maxPrice);
   if (query.minSold !== null && query.minSold !== undefined)
     push("l.sold_count >= $?", query.minSold);
   if (query.minReviews !== null && query.minReviews !== undefined)
@@ -238,5 +246,35 @@ SELECT count(*)::bigint AS total
       commentRate: num(row["comment_rate"]),
       createdAt: iso(row["created_at"]),
     }));
+  }
+
+  /**
+   * Single aggregated query — no N+1, no history loaded.
+   */
+  async getDashboardSummary(): Promise<DashboardSummary> {
+    const pool = await getPool();
+    const { rows } = await pool.query(`
+WITH counts AS (
+  SELECT product_id, count(*) AS c FROM product_snapshots GROUP BY product_id
+)
+SELECT (SELECT count(*) FROM products)::bigint AS products_monitored,
+       (SELECT count(*) FROM counts WHERE c >= 2)::bigint AS products_with_history,
+       (SELECT count(*) FROM product_snapshots)::bigint AS snapshots_collected,
+       (SELECT max(observed_at) FROM product_snapshots) AS last_observation_at,
+       (SELECT count(*) FROM products WHERE first_seen_at >= now() - interval '24 hours')::bigint AS new_products_24h,
+       (SELECT count(*) FROM product_snapshots WHERE observed_at >= now() - interval '24 hours')::bigint AS snapshots_24h`);
+    const row = rows[0] ?? {};
+    const lastObservationAt = row["last_observation_at"];
+    return {
+      productsMonitored: num(row["products_monitored"]) ?? 0,
+      productsWithHistory: num(row["products_with_history"]) ?? 0,
+      snapshotsCollected: num(row["snapshots_collected"]) ?? 0,
+      lastObservationAt:
+        lastObservationAt === null || lastObservationAt === undefined
+          ? null
+          : iso(lastObservationAt),
+      newProducts24h: num(row["new_products_24h"]) ?? 0,
+      snapshots24h: num(row["snapshots_24h"]) ?? 0,
+    };
   }
 }

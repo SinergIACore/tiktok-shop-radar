@@ -84,8 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "TikRadar AI — Product & Creative Intelligence" },
       {
         name: "description",
-        content:
-          "Plataforma de inteligência de produtos e criativos para TikTok e TikTok Shop.",
+        content: "Plataforma de inteligência de produtos e criativos para TikTok e TikTok Shop.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -134,9 +133,6 @@ function RootComponent() {
               <SidebarTrigger />
               <span className="font-display text-sm font-medium text-muted-foreground">
                 {appConfig.name}
-              </span>
-              <span className="ml-auto rounded-full border border-border px-2.5 py-1 text-[11px] uppercase tracking-wide text-muted-foreground">
-                dados mockados
               </span>
             </header>
             <main className="grid-surface flex-1">

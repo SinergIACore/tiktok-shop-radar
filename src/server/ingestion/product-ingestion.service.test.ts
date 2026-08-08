@@ -113,9 +113,7 @@ describe("ProductIngestionService", () => {
   });
 
   it("I. delta null quando soldCount anterior é null", () => {
-    expect(
-      soldCountDelta([{ soldCount: null }, { soldCount: 9790 }]),
-    ).toBeNull();
+    expect(soldCountDelta([{ soldCount: null }, { soldCount: 9790 }])).toBeNull();
     expect(soldCountDelta([{ soldCount: 9790 }])).toBeNull();
   });
 

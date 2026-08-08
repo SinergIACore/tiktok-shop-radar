@@ -70,12 +70,7 @@ export interface ProductDetailResponse {
 }
 
 export type RealProductSort =
-  | "soldCount"
-  | "gmv"
-  | "soldCountDelta"
-  | "gmvDelta"
-  | "salesVelocity"
-  | "lastObservedAt";
+  "soldCount" | "gmv" | "soldCountDelta" | "gmvDelta" | "salesVelocity" | "lastObservedAt";
 
 export interface RealProductQuery {
   page?: number;

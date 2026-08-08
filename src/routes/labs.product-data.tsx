@@ -7,9 +7,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type {
-  ProductSearchResult,
-} from "@/services/providers/product-data/types/external-product.types";
+import type { ProductSearchResult } from "@/services/providers/product-data/types/external-product.types";
 
 type ApiError = { error: { code: string; message: string } };
 

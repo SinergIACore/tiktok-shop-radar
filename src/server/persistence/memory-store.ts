@@ -51,7 +51,12 @@ export class MemoryProductStore implements ProductStore {
         lastSeenAt: now,
       };
     } else {
-      product = { ...existing, ...mergeIdentity(existing, identity), updatedAt: now, lastSeenAt: now };
+      product = {
+        ...existing,
+        ...mergeIdentity(existing, identity),
+        updatedAt: now,
+        lastSeenAt: now,
+      };
     }
     this.products.set(product.id, product);
 

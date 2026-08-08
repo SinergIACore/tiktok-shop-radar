@@ -37,3 +37,12 @@ tendência e Viral Score.
 
 - **Docker**: imagem existe (`docker/Dockerfile`); falta build validado no host.
 - **Roteador**: confirmar a manutenção do TanStack Router (D-002).
+
+## Etapa 02B.4 — concluída
+
+Dashboard migrado para dados persistidos reais via `GET /api/dashboard`.
+Produtos e Dashboard usam PostgreSQL; Criativos, Análises e Biblioteca
+continuam mockados e sinalizados como demonstração.
+
+Próxima etapa sugerida (não iniciada): camada de inteligência — Viral Score,
+Opportunity Score, tendências 24h/7d/30d, aceleração e coleta automática.

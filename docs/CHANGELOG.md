@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## Etapa 02B.4 — Dashboard com dados reais
+
+Adicionado:
+
+- `src/server/dashboard/`: `DashboardReadService` + tipos do read model.
+- `ProductReadRepository.getDashboardSummary()` (Postgres agregado em uma
+  query; Memory para sandbox/testes).
+- `GET /api/dashboard` e `src/lib/dashboard-view-model.ts` (adaptador puro).
+- `DashboardService` + `httpDashboardRepository` (UI nunca faz fetch direto).
+- `RealProductCard` e `DataSourceBadge` (indicador contextual de fonte).
+- `src/server/dashboard/dashboard-read.test.ts` (11 testes).
+
+Alterado:
+
+- `/` deixou de usar mocks: cards objetivos (produtos monitorados, produtos com
+  histórico, snapshots coletados, última coleta) e quatro listagens reais.
+- Selo global "dados mockados" removido do cabeçalho; telas ainda mockadas
+  (Criativos, Análises, Biblioteca) exibem o selo localmente.
+
+Não alterado: ingestão, provider Apify, migrations, Dockerfile, `/products`.
+Nenhum Viral Score, Opportunity Score, tendência, aceleração ou previsão foi
+introduzido.
+
 ## Etapa 02B.2 — Leitura real + métricas históricas básicas
 
 Adicionado:
@@ -33,8 +56,6 @@ Corrigido:
 Validado: `npm run build` OK, `npm test` 8/8, servidor Node local
 `GET /api/labs/products` → `200 {"store":"memory","items":[]}`.
 
-
-
 ## Etapa 02A.3 — Ajuste do provider Apify real
 
 Alterado:
@@ -50,7 +71,6 @@ Alterado:
 - Docs: PROVIDERS, API, CHANGELOG, NEXT_STEP.
 
 Adicionado/Removido: nada.
-
 
 ## Etapa 02A.2 — Preparação para deploy Node 22 + Docker + EasyPanel
 

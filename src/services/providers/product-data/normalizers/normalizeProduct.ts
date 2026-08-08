@@ -1,7 +1,4 @@
-import type {
-  ExternalProduct,
-  NormalizedProduct,
-} from "../types/external-product.types";
+import type { ExternalProduct, NormalizedProduct } from "../types/external-product.types";
 
 /**
  * Converts an unknown provider payload into the internal product model.
@@ -43,7 +40,6 @@ function firstImage(item: ExternalProduct): string | null {
   return null;
 }
 
-
 export function normalizeProduct(
   item: ExternalProduct,
   source: string,
@@ -74,14 +70,19 @@ export function normalizeProduct(
       pick(item, ["categoryPath", "category_path", "category", "categoryName", "category_name"]),
     ),
     price: asNumber(
-      pick(item, ["currentPrice", "current_price", "price", "sale_price", "salePrice", "min_price"]),
+      pick(item, [
+        "currentPrice",
+        "current_price",
+        "price",
+        "sale_price",
+        "salePrice",
+        "min_price",
+      ]),
     ),
     currency: asString(pick(item, ["currency", "currencyCode", "currency_code"])),
     soldCount: asNumber(pick(item, ["soldCount", "sold_count", "sales", "sale_count"])),
     rating: asNumber(pick(item, ["rating", "score", "average_rating", "product_rating"])),
-    reviewCount: asNumber(
-      pick(item, ["reviewCount", "review_count", "reviews", "comment_count"]),
-    ),
+    reviewCount: asNumber(pick(item, ["reviewCount", "review_count", "reviews", "comment_count"])),
     sellerName: asString(pick(item, ["sellerName", "seller_name", "shop_name", "shopName"])),
     sellerVideoCount: asNumber(pick(item, ["sellerVideoCount", "seller_video_count"])),
     gmvContribution: asNumber(pick(item, ["gmvContribution", "gmv_contribution"])),

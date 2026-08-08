@@ -87,7 +87,11 @@ export function filterProducts(
         return false;
     }
     if (query.minRating !== null && query.minRating !== undefined) {
-      if (latest?.rating === null || latest?.rating === undefined || latest.rating < query.minRating)
+      if (
+        latest?.rating === null ||
+        latest?.rating === undefined ||
+        latest.rating < query.minRating
+      )
         return false;
     }
     return true;

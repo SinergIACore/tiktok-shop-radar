@@ -28,7 +28,9 @@ export const Route = createFileRoute("/api/products/")({
         } catch (error) {
           console.error("[products] database_error", error);
           return Response.json(
-            { error: { code: "database_error", message: "Não foi possível carregar os produtos." } },
+            {
+              error: { code: "database_error", message: "Não foi possível carregar os produtos." },
+            },
             { status: 500 },
           );
         }

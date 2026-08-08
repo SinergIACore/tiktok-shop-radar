@@ -57,9 +57,7 @@ export function ProductFilters({ value, onChange }: ProductFiltersProps) {
 
       <Select
         value={value.category}
-        onValueChange={(next) =>
-          onChange({ ...value, category: next as ProductCategory | "all" })
-        }
+        onValueChange={(next) => onChange({ ...value, category: next as ProductCategory | "all" })}
       >
         <SelectTrigger className="h-10 w-[170px]">
           <SelectValue placeholder="Categoria" />

@@ -31,9 +31,16 @@ async function getPool(): Promise<PoolLike> {
         throw new PersistenceError("database_error", "DATABASE_URL não configurada.", 503);
       }
       const pg = await import("pg");
-      const Pool = (pg as unknown as { default?: { Pool: new (c: object) => PoolLike }; Pool?: new (c: object) => PoolLike })
-        .Pool ?? (pg as unknown as { default: { Pool: new (c: object) => PoolLike } }).default.Pool;
-      const ssl = process.env["DATABASE_SSL"] === "true" ? { rejectUnauthorized: false } : undefined;
+      const Pool =
+        (
+          pg as unknown as {
+            default?: { Pool: new (c: object) => PoolLike };
+            Pool?: new (c: object) => PoolLike;
+          }
+        ).Pool ??
+        (pg as unknown as { default: { Pool: new (c: object) => PoolLike } }).default.Pool;
+      const ssl =
+        process.env["DATABASE_SSL"] === "true" ? { rejectUnauthorized: false } : undefined;
       return new Pool({ connectionString, max: 5, ...(ssl ? { ssl } : {}) });
     })();
   }
@@ -186,10 +193,9 @@ export class PostgresProductStore implements ProductStore {
 
   async getProduct(productId: string) {
     const pool = await getPool();
-    const { rows } = await pool.query(
-      `SELECT ${PRODUCT_COLUMNS} FROM products WHERE id = $1`,
-      [productId],
-    );
+    const { rows } = await pool.query(`SELECT ${PRODUCT_COLUMNS} FROM products WHERE id = $1`, [
+      productId,
+    ]);
     return rows[0] ? toProduct(rows[0]) : null;
   }
 

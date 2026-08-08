@@ -62,10 +62,8 @@ interface Props {
 }
 
 export function RealProductFilters({ value, onChange, categories }: Props) {
-  const set = <K extends keyof RealProductFiltersValue>(
-    key: K,
-    next: RealProductFiltersValue[K],
-  ) => onChange({ ...value, [key]: next });
+  const set = <K extends keyof RealProductFiltersValue>(key: K, next: RealProductFiltersValue[K]) =>
+    onChange({ ...value, [key]: next });
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4">
