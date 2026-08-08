@@ -2,7 +2,11 @@
 
 ## Existentes
 
-Nenhuma. A aplicação não realiza chamadas a APIs externas na Etapa 01.
+| Integração | Finalidade | Status |
+| ---------- | ---------- | ------ |
+| Apify (`ProductDataProvider`) | consulta de produtos do TikTok Shop | prova técnica (Etapa 02A), apenas em `/labs/product-data` |
+
+Detalhes de endpoint, Actor, custo e substituição: `PROVIDERS.md`.
 
 ## Planejadas (não implementadas)
 

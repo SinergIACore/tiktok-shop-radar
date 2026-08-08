@@ -13,7 +13,15 @@
 7. Tokens sensíveis não são armazenados em `localStorage`.
 8. Apenas variáveis com prefixo `VITE_` são consideradas públicas.
 
-## Estado atual
+## Estado atual (Etapa 02A)
 
-Nenhum segredo é necessário ou utilizado na Etapa 01. Não há autenticação,
-sessão, cookie ou armazenamento de credenciais.
+- O token do provider de dados (`APIFY_API_TOKEN`) existe **somente** no
+  ambiente server-side e é lido dentro do handler de
+  `GET /api/products/search`. Não há variável `VITE_APIFY_*`.
+- O navegador nunca chama a API do provider diretamente; sempre passa pelo
+  endpoint próprio da aplicação.
+- Logs registram apenas provider, status, duração e quantidade de resultados —
+  nunca token, credenciais, headers de autenticação ou payload completo.
+- Mensagens de erro repassam o texto do provider truncado (500 chars) e não
+  incluem credenciais.
+- Não há autenticação, sessão, cookie ou armazenamento de credenciais.
