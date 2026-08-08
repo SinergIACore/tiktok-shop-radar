@@ -83,6 +83,15 @@ export interface ProductReadRepository {
   getProductWithMetrics(productId: string): Promise<ProductWithMetrics | null>;
   /** Chronological history (observedAt ASC). */
   listHistory(productId: string): Promise<StoredSnapshot[]>;
+  /**
+   * Bulk history read used by the trend engine (Stage 02C.1).
+   * Returns, per product id, the most recent `historyLimit` snapshots ordered
+   * ASC by observedAt. One query — no N+1.
+   */
+  listHistoriesForProducts(
+    productIds: string[],
+    historyLimit: number,
+  ): Promise<Record<string, StoredSnapshot[]>>;
   /** Objective aggregates for the dashboard (Stage 02B.4). */
   getDashboardSummary(): Promise<DashboardSummary>;
 }

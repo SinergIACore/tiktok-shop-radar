@@ -189,3 +189,52 @@ Fonte de dados por tela (indicador contextual `DataSourceBadge`):
 | Criativos, Análises, Biblioteca | mocks / demonstração |
 
 O selo global "dados mockados" do cabeçalho foi removido.
+
+## Etapa 02C.1 — Motor de tendência histórica (LAB)
+
+```
+product_snapshots (ASC por observed_at)
+  → src/server/intelligence/trend-metrics.ts    (puro: intervalos, velocidades)
+  → src/server/intelligence/trend-classifier.ts (puro: TrendStatus, TrendEvidence)
+  → src/server/intelligence/trend-explanation.ts(puro: texto determinístico)
+  → src/server/intelligence/trend-engine.ts     (analyzeProductTrend)
+  → src/server/intelligence/trend-read.service.ts (orquestra repositório)
+  → GET /api/labs/products/trends
+  → GET /api/labs/products/:productId/trend
+  → LAB /labs/product-trends
+```
+
+A camada `intelligence` é pura: não faz `fetch`, não importa `pg`, não acessa o
+banco e não grava. Recebe apenas uma lista de snapshots e devolve a análise.
+Um teste automatizado (caso P) garante essa restrição lendo o código-fonte.
+
+Fórmulas (NULL nunca vira zero; qualquer operando NULL ⇒ resultado NULL):
+
+- `timeDeltaHours = (current.observedAt − previous.observedAt) / 1h`
+- `salesVelocity = soldCountDelta / timeDeltaHours` (somente se > 0h)
+- `gmvVelocity = gmvDelta / timeDeltaHours`
+- `reviewVelocity = reviewCountDelta / timeDeltaHours`
+- `sellerVideoVelocity = sellerVideoCountDelta / timeDeltaHours`
+- `salesAcceleration = velocityCurrent − velocityPrevious` (diferença entre
+  duas velocidades observadas; não é aceleração física normalizada por tempo)
+- `velocityRatio = velocityCurrent / velocityPrevious` (somente se
+  `velocityPrevious > 0`)
+- `growthConsistency = positiveSalesIntervals / validSalesIntervals`
+
+`TrendStatus` (ordem de avaliação): `insufficient_data` → `accelerating`
+(`velocityCurrent > 0` e `acceleration > 0`, exige 3+ snapshots válidos) →
+`decelerating` (`velocityCurrent >= 0` e `acceleration < 0`) → `declining`
+(`delta < 0`) → `growing` (`delta > 0` e `velocity > 0`) → `stable`
+(`delta = 0`).
+
+`declining` significa "o contador observado de vendas diminuiu" — pode ser
+correção do provider, não necessariamente demanda real negativa.
+
+`TrendEvidence` descreve apenas quantidade/qualidade de observações válidas
+(low < 3, medium 3–5, high 6+ snapshots válidos). **Não é probabilidade.**
+
+Snapshots são ordenados ASC antes de qualquer cálculo; intervalos `<= 0h` não
+produzem velocidade e não contam como observação válida de vendas.
+
+Tendência observada ≠ previsão: esta etapa descreve o passado. Não há Viral
+Score, ranking inteligente nem projeção futura.

@@ -153,6 +153,10 @@ describe("DashboardReadService", () => {
         spy.calls.push("listHistory");
         return repository.listHistory(id);
       },
+      listHistoriesForProducts: (ids, historyLimit) => {
+        spy.calls.push("listHistoriesForProducts");
+        return repository.listHistoriesForProducts(ids, historyLimit);
+      },
       getDashboardSummary: () => {
         spy.calls.push("getDashboardSummary");
         return repository.getDashboardSummary();

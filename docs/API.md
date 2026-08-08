@@ -259,3 +259,46 @@ DESC). Os itens usam o mesmo `ProductListViewModel` de `/api/products`.
 
 Erro de banco: HTTP 500 `{ "error": { "code": "database_error", … } }`.
 Sem fallback para mocks.
+
+## GET /api/labs/products/trends (Etapa 02C.1 — LAB)
+
+Parâmetros: `limit` (1–100, default 25), `historyLimit` (2–200, default 20),
+`status` (`accelerating|growing|stable|decelerating|declining|insufficient_data`),
+`minSnapshots`.
+
+```json
+{
+  "store": "postgres",
+  "generatedAt": "2026-08-08T23:00:00.000Z",
+  "query": { "limit": 25, "historyLimit": 20, "status": null, "minSnapshots": null },
+  "items": [
+    {
+      "id": "…", "name": "…", "thumbnail": null, "sellerName": "…",
+      "snapshotCount": 5,
+      "trend": {
+        "status": "accelerating", "evidence": "medium",
+        "validIntervals": 4,
+        "latest": { "observedAt": "…", "soldCount": 140, "gmv": null, "reviews": null,
+                    "sellerVideoCount": null, "price": null },
+        "sales": { "delta": 30, "velocity": 15, "previousVelocity": 5,
+                   "acceleration": 10, "velocityRatio": 3,
+                   "positiveIntervals": 3, "negativeIntervals": 0,
+                   "neutralIntervals": 1, "consistency": 0.75 },
+        "gmv": { "delta": null, "velocity": null },
+        "reviews": { "delta": null, "velocity": null },
+        "sellerVideos": { "delta": null, "velocity": null },
+        "intervals": [],
+        "explanation": "Produto acelerando: …"
+      }
+    }
+  ]
+}
+```
+
+Leitura em massa sem N+1: uma query com window function busca os últimos
+`historyLimit` snapshots de todos os produtos da página.
+
+## GET /api/labs/products/:productId/trend (Etapa 02C.1 — LAB)
+
+Retorna `{ store, generatedAt, item, snapshots }` — a análise completa e os
+snapshots utilizados. 404 quando o produto não existe.

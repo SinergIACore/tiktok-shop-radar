@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## Etapa 02C.1 — Motor de tendência histórica (LAB)
+
+Adicionado:
+
+- `src/server/intelligence/`: `trend-types.ts`, `trend-metrics.ts`,
+  `trend-classifier.ts`, `trend-explanation.ts`, `trend-engine.ts` (camada pura)
+  e `trend-read.service.ts` (orquestração de leitura).
+- Métricas novas: `gmvVelocity`, `reviewVelocity`, `sellerVideoVelocity`,
+  `salesAcceleration`, `velocityRatio`, `growthConsistency`, direções de sinal.
+- `TrendStatus` e `TrendEvidence` determinísticos + explicação em texto sem IA.
+- `ProductReadRepository.listHistoriesForProducts()` (Postgres em query única).
+- `GET /api/labs/products/trends` e `GET /api/labs/products/:id/trend`.
+- LAB `/labs/product-trends` com badges semânticos e detalhes por intervalo.
+- `src/server/intelligence/trend-engine.test.ts` (16 testes, casos A–P).
+
+Não alterado: Dashboard, `/products`, ingestão, provider Apify, migrations,
+Dockerfile, mocks. Nenhum Viral Score, previsão ou coleta automática.
+
 ## Etapa 02B.4 — Dashboard com dados reais
 
 Adicionado:

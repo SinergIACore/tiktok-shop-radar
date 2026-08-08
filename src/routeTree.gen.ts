@@ -18,6 +18,7 @@ import { Route as ApiDashboardRouteImport } from './routes/api/dashboard'
 import { Route as LabsProductDataRouteImport } from './routes/labs.product-data'
 import { Route as LabsProductHistoryRouteImport } from './routes/labs.product-history'
 import { Route as LabsProductMetricsRouteImport } from './routes/labs.product-metrics'
+import { Route as LabsProductTrendsRouteImport } from './routes/labs.product-trends'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
 import { Route as ApiProductsIndexRouteImport } from './routes/api/products/index'
@@ -26,7 +27,9 @@ import { Route as ApiProductsSearchRouteImport } from './routes/api/products/sea
 import { Route as ApiLabsProductsIndexRouteImport } from './routes/api/labs/products/index'
 import { Route as ApiLabsProductsIngestRouteImport } from './routes/api/labs/products/ingest'
 import { Route as ApiLabsProductsMetricsRouteImport } from './routes/api/labs/products/metrics'
+import { Route as ApiLabsProductsTrendsRouteImport } from './routes/api/labs/products/trends'
 import { Route as ApiLabsProductsProductIdHistoryRouteImport } from './routes/api/labs/products/$productId.history'
+import { Route as ApiLabsProductsProductIdTrendRouteImport } from './routes/api/labs/products/$productId.trend'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -73,6 +76,11 @@ const LabsProductMetricsRoute = LabsProductMetricsRouteImport.update({
   path: '/labs/product-metrics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LabsProductTrendsRoute = LabsProductTrendsRouteImport.update({
+  id: '/labs/product-trends',
+  path: '/labs/product-trends',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
   id: '/products/',
   path: '/products/',
@@ -113,10 +121,21 @@ const ApiLabsProductsMetricsRoute = ApiLabsProductsMetricsRouteImport.update({
   path: '/api/labs/products/metrics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLabsProductsTrendsRoute = ApiLabsProductsTrendsRouteImport.update({
+  id: '/api/labs/products/trends',
+  path: '/api/labs/products/trends',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLabsProductsProductIdHistoryRoute =
   ApiLabsProductsProductIdHistoryRouteImport.update({
     id: '/api/labs/products/$productId/history',
     path: '/api/labs/products/$productId/history',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiLabsProductsProductIdTrendRoute =
+  ApiLabsProductsProductIdTrendRouteImport.update({
+    id: '/api/labs/products/$productId/trend',
+    path: '/api/labs/products/$productId/trend',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -130,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/labs/product-data': typeof LabsProductDataRoute
   '/labs/product-history': typeof LabsProductHistoryRoute
   '/labs/product-metrics': typeof LabsProductMetricsRoute
+  '/labs/product-trends': typeof LabsProductTrendsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/': typeof ProductsIndexRoute
   '/api/products/$productId': typeof ApiProductsProductIdRoute
@@ -137,8 +157,10 @@ export interface FileRoutesByFullPath {
   '/api/products/': typeof ApiProductsIndexRoute
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
   '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
+  '/api/labs/products/trends': typeof ApiLabsProductsTrendsRoute
   '/api/labs/products/': typeof ApiLabsProductsIndexRoute
   '/api/labs/products/$productId/history': typeof ApiLabsProductsProductIdHistoryRoute
+  '/api/labs/products/$productId/trend': typeof ApiLabsProductsProductIdTrendRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -150,6 +172,7 @@ export interface FileRoutesByTo {
   '/labs/product-data': typeof LabsProductDataRoute
   '/labs/product-history': typeof LabsProductHistoryRoute
   '/labs/product-metrics': typeof LabsProductMetricsRoute
+  '/labs/product-trends': typeof LabsProductTrendsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products': typeof ProductsIndexRoute
   '/api/products/$productId': typeof ApiProductsProductIdRoute
@@ -157,8 +180,10 @@ export interface FileRoutesByTo {
   '/api/products': typeof ApiProductsIndexRoute
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
   '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
+  '/api/labs/products/trends': typeof ApiLabsProductsTrendsRoute
   '/api/labs/products': typeof ApiLabsProductsIndexRoute
   '/api/labs/products/$productId/history': typeof ApiLabsProductsProductIdHistoryRoute
+  '/api/labs/products/$productId/trend': typeof ApiLabsProductsProductIdTrendRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -171,6 +196,7 @@ export interface FileRoutesById {
   '/labs/product-data': typeof LabsProductDataRoute
   '/labs/product-history': typeof LabsProductHistoryRoute
   '/labs/product-metrics': typeof LabsProductMetricsRoute
+  '/labs/product-trends': typeof LabsProductTrendsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/': typeof ProductsIndexRoute
   '/api/products/$productId': typeof ApiProductsProductIdRoute
@@ -178,8 +204,10 @@ export interface FileRoutesById {
   '/api/products/': typeof ApiProductsIndexRoute
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
   '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
+  '/api/labs/products/trends': typeof ApiLabsProductsTrendsRoute
   '/api/labs/products/': typeof ApiLabsProductsIndexRoute
   '/api/labs/products/$productId/history': typeof ApiLabsProductsProductIdHistoryRoute
+  '/api/labs/products/$productId/trend': typeof ApiLabsProductsProductIdTrendRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -193,6 +221,7 @@ export interface FileRouteTypes {
     | '/labs/product-data'
     | '/labs/product-history'
     | '/labs/product-metrics'
+    | '/labs/product-trends'
     | '/products/$productId'
     | '/products/'
     | '/api/products/$productId'
@@ -200,8 +229,10 @@ export interface FileRouteTypes {
     | '/api/products/'
     | '/api/labs/products/ingest'
     | '/api/labs/products/metrics'
+    | '/api/labs/products/trends'
     | '/api/labs/products/'
     | '/api/labs/products/$productId/history'
+    | '/api/labs/products/$productId/trend'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -213,6 +244,7 @@ export interface FileRouteTypes {
     | '/labs/product-data'
     | '/labs/product-history'
     | '/labs/product-metrics'
+    | '/labs/product-trends'
     | '/products/$productId'
     | '/products'
     | '/api/products/$productId'
@@ -220,8 +252,10 @@ export interface FileRouteTypes {
     | '/api/products'
     | '/api/labs/products/ingest'
     | '/api/labs/products/metrics'
+    | '/api/labs/products/trends'
     | '/api/labs/products'
     | '/api/labs/products/$productId/history'
+    | '/api/labs/products/$productId/trend'
   id:
     | '__root__'
     | '/'
@@ -233,6 +267,7 @@ export interface FileRouteTypes {
     | '/labs/product-data'
     | '/labs/product-history'
     | '/labs/product-metrics'
+    | '/labs/product-trends'
     | '/products/$productId'
     | '/products/'
     | '/api/products/$productId'
@@ -240,8 +275,10 @@ export interface FileRouteTypes {
     | '/api/products/'
     | '/api/labs/products/ingest'
     | '/api/labs/products/metrics'
+    | '/api/labs/products/trends'
     | '/api/labs/products/'
     | '/api/labs/products/$productId/history'
+    | '/api/labs/products/$productId/trend'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -254,6 +291,7 @@ export interface RootRouteChildren {
   LabsProductDataRoute: typeof LabsProductDataRoute
   LabsProductHistoryRoute: typeof LabsProductHistoryRoute
   LabsProductMetricsRoute: typeof LabsProductMetricsRoute
+  LabsProductTrendsRoute: typeof LabsProductTrendsRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiProductsProductIdRoute: typeof ApiProductsProductIdRoute
@@ -261,8 +299,10 @@ export interface RootRouteChildren {
   ApiProductsIndexRoute: typeof ApiProductsIndexRoute
   ApiLabsProductsIngestRoute: typeof ApiLabsProductsIngestRoute
   ApiLabsProductsMetricsRoute: typeof ApiLabsProductsMetricsRoute
+  ApiLabsProductsTrendsRoute: typeof ApiLabsProductsTrendsRoute
   ApiLabsProductsIndexRoute: typeof ApiLabsProductsIndexRoute
   ApiLabsProductsProductIdHistoryRoute: typeof ApiLabsProductsProductIdHistoryRoute
+  ApiLabsProductsProductIdTrendRoute: typeof ApiLabsProductsProductIdTrendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -330,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LabsProductMetricsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/labs/product-trends': {
+      id: '/labs/product-trends'
+      path: '/labs/product-trends'
+      fullPath: '/labs/product-trends'
+      preLoaderRoute: typeof LabsProductTrendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/': {
       id: '/products/'
       path: '/products'
@@ -386,11 +433,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLabsProductsMetricsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/labs/products/trends': {
+      id: '/api/labs/products/trends'
+      path: '/api/labs/products/trends'
+      fullPath: '/api/labs/products/trends'
+      preLoaderRoute: typeof ApiLabsProductsTrendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/labs/products/$productId/history': {
       id: '/api/labs/products/$productId/history'
       path: '/api/labs/products/$productId/history'
       fullPath: '/api/labs/products/$productId/history'
       preLoaderRoute: typeof ApiLabsProductsProductIdHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/labs/products/$productId/trend': {
+      id: '/api/labs/products/$productId/trend'
+      path: '/api/labs/products/$productId/trend'
+      fullPath: '/api/labs/products/$productId/trend'
+      preLoaderRoute: typeof ApiLabsProductsProductIdTrendRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -406,6 +467,7 @@ const rootRouteChildren: RootRouteChildren = {
   LabsProductDataRoute: LabsProductDataRoute,
   LabsProductHistoryRoute: LabsProductHistoryRoute,
   LabsProductMetricsRoute: LabsProductMetricsRoute,
+  LabsProductTrendsRoute: LabsProductTrendsRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiProductsProductIdRoute: ApiProductsProductIdRoute,
@@ -413,19 +475,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiProductsIndexRoute: ApiProductsIndexRoute,
   ApiLabsProductsIngestRoute: ApiLabsProductsIngestRoute,
   ApiLabsProductsMetricsRoute: ApiLabsProductsMetricsRoute,
+  ApiLabsProductsTrendsRoute: ApiLabsProductsTrendsRoute,
   ApiLabsProductsIndexRoute: ApiLabsProductsIndexRoute,
   ApiLabsProductsProductIdHistoryRoute: ApiLabsProductsProductIdHistoryRoute,
+  ApiLabsProductsProductIdTrendRoute: ApiLabsProductsProductIdTrendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
