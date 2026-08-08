@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as CreativesRouteImport } from './routes/creatives'
+import { Route as DiscoveryRouteImport } from './routes/discovery'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ApiDashboardRouteImport } from './routes/api/dashboard'
@@ -50,6 +51,11 @@ const AnalyticsRoute = AnalyticsRouteImport.update({
 const CreativesRoute = CreativesRouteImport.update({
   id: '/creatives',
   path: '/creatives',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscoveryRoute = DiscoveryRouteImport.update({
+  id: '/discovery',
+  path: '/discovery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LibraryRoute = LibraryRouteImport.update({
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/creatives': typeof CreativesRoute
+  '/discovery': typeof DiscoveryRoute
   '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
   '/api/dashboard': typeof ApiDashboardRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/creatives': typeof CreativesRoute
+  '/discovery': typeof DiscoveryRoute
   '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
   '/api/dashboard': typeof ApiDashboardRoute
@@ -242,6 +250,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/creatives': typeof CreativesRoute
+  '/discovery': typeof DiscoveryRoute
   '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
   '/api/dashboard': typeof ApiDashboardRoute
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/creatives'
+    | '/discovery'
     | '/library'
     | '/settings'
     | '/api/dashboard'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/creatives'
+    | '/discovery'
     | '/library'
     | '/settings'
     | '/api/dashboard'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/creatives'
+    | '/discovery'
     | '/library'
     | '/settings'
     | '/api/dashboard'
@@ -361,6 +373,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyticsRoute: typeof AnalyticsRoute
   CreativesRoute: typeof CreativesRoute
+  DiscoveryRoute: typeof DiscoveryRoute
   LibraryRoute: typeof LibraryRoute
   SettingsRoute: typeof SettingsRoute
   ApiDashboardRoute: typeof ApiDashboardRoute
@@ -407,6 +420,13 @@ declare module '@tanstack/react-router' {
       path: '/creatives'
       fullPath: '/creatives'
       preLoaderRoute: typeof CreativesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discovery': {
+      id: '/discovery'
+      path: '/discovery'
+      fullPath: '/discovery'
+      preLoaderRoute: typeof DiscoveryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/library': {
@@ -598,6 +618,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
   CreativesRoute: CreativesRoute,
+  DiscoveryRoute: DiscoveryRoute,
   LibraryRoute: LibraryRoute,
   SettingsRoute: SettingsRoute,
   ApiDashboardRoute: ApiDashboardRoute,
