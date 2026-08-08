@@ -12,4 +12,8 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Production runtime target: Node.js server (Docker/EasyPanel/VPS).
+  // Inside the Lovable sandbox this override is ignored and the build stays
+  // on the platform default, so the preview keeps working unchanged.
+  nitro: { preset: "node-server" },
 });
