@@ -34,13 +34,26 @@ Nenhum `localhost` é fixado no código.
 Arquivo: `docker/Dockerfile` (multi-stage).
 
 - **builder**: `node:22-alpine`, `npm install`, `npm run build`.
-- **runner**: `node:22-alpine`, `NODE_ENV=production`, copia apenas `.output/`,
-  usuário `node`, `EXPOSE 3000`, `CMD ["node", ".output/server/index.mjs"]`.
+- **runner**: `node:22-alpine`, `NODE_ENV=production`, `npm install --omit=dev`
+  (inclui `pg`), copia `.output/`, `package.json`, `scripts/migrate.mjs` e
+  `db/migrations/`; usuário `node`, `EXPOSE 3000`,
+  `CMD ["node", ".output/server/index.mjs"]`. Nenhum `src/` nem `.env` entra na
+  imagem final, e a migration **não** roda no startup.
 
 ```bash
 docker build -f docker/Dockerfile -t tikradar-test .
 docker run --rm -p 3000:3000 tikradar-test
 ```
+
+## Migrations em produção
+
+Operação explícita, executada no terminal/console do container do serviço app
+no EasyPanel (com `DATABASE_URL` já definida no serviço):
+
+```bash
+npm run migrate
+```
+
 
 `.dockerignore` exclui `node_modules`, `.git`, `.env`, `.env.*` (mantendo
 `.env.example`), `dist`, `.output`, `.wrangler`, `coverage`, logs e temporários.
