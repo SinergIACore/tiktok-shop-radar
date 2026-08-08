@@ -1,7 +1,13 @@
 import { computeProductMetrics, EMPTY_METRICS } from "../metrics/product-metrics";
 import type { MetricSnapshot } from "../metrics/product-metrics";
 import type { ProductStore, StoredProduct, StoredSnapshot } from "../persistence/types";
-import type { ProductReadRepository, ProductWithMetrics } from "./types";
+import { filterProducts, paginate, sortProducts } from "./list-query";
+import type {
+  ProductListPage,
+  ProductListQuery,
+  ProductReadRepository,
+  ProductWithMetrics,
+} from "./types";
 
 /** Snapshot projection used by the metrics layer. */
 export function toMetricSnapshot(snapshot: StoredSnapshot | null): MetricSnapshot | null {
@@ -30,7 +36,11 @@ export function assembleProduct(
     name: product.name,
     thumbnail: product.thumbnail,
     productUrl: product.productUrl,
+    category: product.category,
     sellerName: product.sellerName,
+    brand: product.brand,
+    businessName: product.businessName,
+    countryCode: product.countryCode,
     currency: product.currency,
     firstSeenAt: product.firstSeenAt,
     lastSeenAt: product.lastSeenAt,
@@ -48,15 +58,28 @@ export function assembleProduct(
 export class MemoryProductReadRepository implements ProductReadRepository {
   readonly name = "memory";
 
-  constructor(private readonly store: Pick<ProductStore, "listProducts" | "getProduct" | "listSnapshots">) {}
+  constructor(
+    private readonly store: Pick<ProductStore, "listProducts" | "getProduct" | "listSnapshots">,
+  ) {}
 
-  async listProductsWithMetrics(limit = 50): Promise<ProductWithMetrics[]> {
+  private async assembleAll(limit: number): Promise<ProductWithMetrics[]> {
     const products = await this.store.listProducts(limit);
     const result: ProductWithMetrics[] = [];
     for (const product of products) {
       result.push(assembleProduct(product, await this.store.listSnapshots(product.id)));
     }
     return result;
+  }
+
+  async listProductsWithMetrics(limit = 50): Promise<ProductWithMetrics[]> {
+    return this.assembleAll(limit);
+  }
+
+  async listProductsPage(query: ProductListQuery): Promise<ProductListPage> {
+    const all = await this.assembleAll(Number.MAX_SAFE_INTEGER);
+    const filtered = sortProducts(filterProducts(all, query), query);
+    const { total, totalPages, page, items } = paginate(filtered, query.page, query.limit);
+    return { page, limit: query.limit, total, totalPages, items };
   }
 
   async getProductWithMetrics(productId: string): Promise<ProductWithMetrics | null> {

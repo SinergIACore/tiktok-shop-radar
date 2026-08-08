@@ -134,3 +134,14 @@ Regras de null: `NULL` nunca vira `0`; se um dos dois valores for `NULL` a
 métrica derivada é `NULL`; `timeDeltaHours <= 0` ⇒ `salesVelocity = NULL`;
 produto com um único snapshot ⇒ todas as métricas `NULL`. Nenhum percentual,
 tendência, aceleração, saturação ou Viral Score é calculado nesta etapa.
+
+## Consultas de listagem (Etapa 02B.3)
+
+`listProductsPage` usa uma CTE `ranked` com
+`row_number() OVER (PARTITION BY product_id ORDER BY observed_at DESC)` para
+obter os dois snapshots mais recentes, filtra sobre o snapshot atual (`rn = 1`)
+e pagina com `LIMIT/OFFSET`. O total vem de uma query `COUNT` com os mesmos
+filtros. Ordenações por delta são calculadas em SQL
+(`l.sold_count - v.sold_count`), sempre com `NULLS LAST`.
+
+Nenhuma migration nova foi necessária: os índices de 0001 atendem as consultas.

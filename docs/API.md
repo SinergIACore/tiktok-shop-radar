@@ -197,3 +197,34 @@ provider externo e nunca grava. Parâmetro opcional `limit` (1–200, padrão 50
 
 Produtos com apenas 1 snapshot aparecem normalmente com `previous: null` e
 todas as métricas `null`. Erros: 500 `database_error`.
+
+## GET /api/products (Etapa 02B.3)
+
+Listagem paginada dos produtos persistidos. Somente leitura: nunca chama o
+provider e nunca grava.
+
+Parâmetros: `page` (default 1), `limit` (10 | 25 | 50, default 25), `search`,
+`seller`, `category`, `minPrice`, `maxPrice`, `minSold`, `minReviews`,
+`minRating`, `hasHistory` (`true`), `sort`
+(`soldCount` | `gmv` | `soldCountDelta` | `gmvDelta` | `salesVelocity` |
+`lastObservedAt`, default `lastObservedAt`), `direction` (`asc` | `desc`).
+Valores inválidos caem no default; nada é lançado.
+
+```json
+{
+  "store": "postgres",
+  "page": 1,
+  "limit": 25,
+  "total": 123,
+  "totalPages": 5,
+  "items": [{ "id": "…", "name": "…", "latest": {}, "metrics": {}, "snapshotCount": 2 }]
+}
+```
+
+Erro de banco: HTTP 500 `{ "error": { "code": "database_error", … } }`.
+Não há fallback para mocks.
+
+## GET /api/products/:productId
+
+Retorna `{ store, product, history }`, onde `history` são os snapshots em ordem
+cronológica (`observedAt` ASC). Produto inexistente: HTTP 404 `not_found`.

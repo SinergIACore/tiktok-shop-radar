@@ -140,3 +140,24 @@ executam nesse mesmo processo Node, onde `process.env` está disponível.
 - `@lovable.dev/vite-tanstack-config` é `devDependency` de build (pacote npm
   público, MIT). Não participa do runtime: a imagem final contém apenas
   `.output/`. Ver D-009.
+
+## Etapa 02B.3 — leitura real na página `/products`
+
+Fluxo de leitura:
+
+```text
+PostgreSQL / Memory
+  → ProductReadRepository (listProductsPage / getProductWithMetrics / listHistory)
+  → product-metrics (cálculo puro)
+  → toProductListViewModel (adaptador puro)
+  → GET /api/products (server-only)
+  → RealProductService → httpRealProductRepository
+  → UI /products e /products/:id
+```
+
+Regras mantidas: a UI não conhece tipos de banco; `pg` continua carregado
+somente via `await import()` dentro do handler (um import dinâmico por
+statement, sem `Promise.all`), portanto fora do bundle client.
+
+O Dashboard continua usando `productService`/`creativeService` com mocks —
+sua migração é uma etapa separada.

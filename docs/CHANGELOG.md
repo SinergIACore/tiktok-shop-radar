@@ -130,3 +130,25 @@ Removido: nada.
   ordem cronológica, delta e deduplicação. Provider externo mockado.
 - **Não alterado**: Dashboard, `/products`, mocks, provider Apify,
   `GET /api/products/search`.
+
+## Etapa 02B.3 — `/products` com dados reais persistidos
+
+- **View model**: `src/types/product-view.ts` + adaptador puro
+  `src/lib/product-view-model.ts`. A UI nunca vê tipos de banco/repositório.
+- **Repositório**: `ProductReadRepository.listProductsPage()` (Postgres e
+  Memory). Postgres usa uma única query com window function + `COUNT` separado
+  (sem N+1); NULLs sempre ordenados por último (`NULLS LAST`).
+- **Endpoints**: `GET /api/products` (paginado/filtrado) e
+  `GET /api/products/:productId` (detalhe + histórico cronológico).
+- **UI**: `/products` e `/products/:id` passam a consumir dados reais via
+  `RealProductService` → `httpRealProductRepository`. Estados de LOADING,
+  EMPTY e ERROR explícitos; sem fallback silencioso para mocks.
+- **Filtros**: nome, seller, categoria, faixa de preço, mínimos de vendas /
+  reviews / rating e "somente com histórico". Ordenação por vendas, GMV,
+  Δ vendas, Δ GMV, vendas/hora e última observação.
+- **Paginação**: server-side, `limit` ∈ {10, 25, 50}, default `page=1&limit=25`.
+- **Dados ausentes**: exibidos como `—`; NULL nunca vira 0.
+- **Testes**: 19 novos casos (`src/server/read/product-list.test.ts`),
+  total 37 passando.
+- **Não alterado**: Dashboard (segue mockado), criativos, biblioteca, análises,
+  provider Apify, ingestão, deduplicação, LABs, Docker e migrations.
