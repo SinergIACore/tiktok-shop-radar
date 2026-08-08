@@ -175,6 +175,10 @@ function ProductDetail({ data }: { data: Awaited<ReturnType<typeof realProductSe
         </div>
       </section>
 
+      <DiscoveryOrigin productId={product.id} />
+
+
+
       <section className="space-y-4">
         <h2 className="font-display text-xl font-semibold">Histórico de snapshots</h2>
         {history.length === 0 ? (
