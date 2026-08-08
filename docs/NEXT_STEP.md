@@ -57,3 +57,18 @@ Próximo passo sugerido (aguardando autorização): validar a engine com dados
 reais em produção e só então decidir como expor tendência em `/products` e no
 Dashboard. Viral Score, ranking de descoberta e coleta automática continuam
 fora de escopo.
+
+## Etapa 02C.2 — concluída
+
+Camada de descoberta e pesquisa: `discovery_searches` + `product_discoveries`
+(migration 0002), `DiscoveryService`, endpoints `/api/discovery/*` e tela
+`/discovery`. Execução 100% manual, com limites de custo aplicados no backend.
+
+Pendências imediatas:
+
+- Rodar `npm run migrate` em produção para aplicar a migration 0002.
+- Validar uma execução real por nicho com o provider Apify e observar custo.
+
+Próximo passo sugerido (aguardando autorização): ranking de descoberta
+(oportunidade/Viral Score) e exposição de tendência em `/products` e no
+Dashboard. Coleta automática/agendada continua fora de escopo.
