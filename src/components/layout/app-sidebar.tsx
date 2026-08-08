@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Compass,
   LayoutDashboard,
   Package,
   Clapperboard,
