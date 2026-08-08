@@ -172,7 +172,7 @@ function DiscoveryPage() {
       <PageHeader
         title="Descoberta"
         description="Pesquise por palavra-chave, nome de produto ou nicho. Toda execução é manual e respeita limites de custo."
-        icon={Compass}
+        actions={<Compass className="size-6 text-muted-foreground" aria-hidden />}
       />
 
       {/* A) Busca rápida */}
