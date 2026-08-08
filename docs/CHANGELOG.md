@@ -190,3 +190,39 @@ Removido: nada.
   total 37 passando.
 - **Não alterado**: Dashboard (segue mockado), criativos, biblioteca, análises,
   provider Apify, ingestão, deduplicação, LABs, Docker e migrations.
+
+## Etapa 02C.2 — Motor de descoberta e pesquisa
+
+- **Catálogo de nichos**: `src/config/niches.ts` (estático, versionado, sem
+  banco). Os termos são um ponto de partida editável, não uma cobertura total.
+- **Persistência**: migration incremental
+  `db/migrations/0002_discovery_searches_and_product_discoveries.sql` com
+  `discovery_searches` (intenção de busca) e `product_discoveries` (origem da
+  descoberta). Migration 0001 intocada.
+- **Adaptadores**: `MemoryDiscoveryStore` e `PostgresDiscoveryStore` atrás da
+  interface `DiscoveryStore` — mesmo padrão portátil das etapas anteriores.
+- **Orquestração**: `DiscoveryService` executa
+  `DiscoverySearch → Provider → Normalizer → Ingestão` reutilizando o
+  `ProductIngestionService` (nenhuma lógica de ingestão duplicada) e o motor de
+  tendência da Etapa 02C.1 (nenhuma métrica recalculada na UI).
+- **Controle de custo**: execução sempre manual; termos processados em
+  sequência; `maxTermsPerRun=5` e `maxProductsPerTerm=5` por padrão, com teto
+  rígido de 10/20 aplicado no backend.
+- **Resiliência**: falha em um termo não aborta a execução; mensagens de erro
+  normalizadas, sem vazar vendor/token.
+- **Endpoints**: `GET /api/discovery/niches`,
+  `GET|POST /api/discovery/searches`,
+  `GET|PATCH /api/discovery/searches/:id`,
+  `POST /api/discovery/searches/:id/run`,
+  `POST /api/discovery/quick-search`,
+  `GET /api/discovery/products/:productId`.
+- **Leitura**: `ProductReadRepository.listProductsByIds()` (Memory e Postgres)
+  evita N+1 ao montar os cards do resultado.
+- **UI**: nova rota `/discovery` (busca rápida, pesquisa por nicho, pesquisas
+  salvas e resultado da execução) e seção "Descoberto por" em
+  `/products/:id`. Item "Descoberta" adicionado à sidebar.
+- **Testes**: 9 novos casos em `src/server/discovery/discovery.service.test.ts`
+  (ingestão, deduplicação entre termos, limites, falha isolada, provider não
+  configurado, validação). Total 73 passando.
+- **Não alterado**: Dashboard, `/products` (listagem), ingestão, deduplicação
+  de snapshots, motor de tendência, LABs, Docker e migration 0001.

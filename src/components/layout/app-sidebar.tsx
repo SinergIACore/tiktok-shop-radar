@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Compass,
   LayoutDashboard,
   Package,
   Clapperboard,
@@ -26,6 +27,7 @@ import { appConfig } from "@/config/app";
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard, exact: true },
   { title: "Produtos", url: "/products", icon: Package, exact: false },
+  { title: "Descoberta", url: "/discovery", icon: Compass, exact: false },
   { title: "Criativos", url: "/creatives", icon: Clapperboard, exact: false },
   { title: "Análises", url: "/analytics", icon: LineChart, exact: false },
   { title: "Biblioteca", url: "/library", icon: Library, exact: false },

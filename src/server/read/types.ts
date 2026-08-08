@@ -77,6 +77,8 @@ export interface ProductReadRepository {
   readonly name: string;
   /** Products with their two most recent snapshots and derived metrics. */
   listProductsWithMetrics(limit?: number): Promise<ProductWithMetrics[]>;
+  /** Products restricted to a set of ids (single query, no N+1). */
+  listProductsByIds(productIds: string[]): Promise<ProductWithMetrics[]>;
   /** Paginated + filtered listing used by /products. */
   listProductsPage(query: ProductListQuery): Promise<ProductListPage>;
   /** Single product with metrics, or null. */

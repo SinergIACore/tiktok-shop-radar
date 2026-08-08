@@ -76,6 +76,15 @@ export class MemoryProductReadRepository implements ProductReadRepository {
     return this.assembleAll(limit);
   }
 
+  async listProductsByIds(productIds: string[]): Promise<ProductWithMetrics[]> {
+    const result: ProductWithMetrics[] = [];
+    for (const productId of productIds) {
+      const product = await this.store.getProduct(productId);
+      if (product) result.push(assembleProduct(product, await this.store.listSnapshots(product.id)));
+    }
+    return result;
+  }
+
   async listProductsPage(query: ProductListQuery): Promise<ProductListPage> {
     const all = await this.assembleAll(Number.MAX_SAFE_INTEGER);
     const filtered = sortProducts(filterProducts(all, query), query);

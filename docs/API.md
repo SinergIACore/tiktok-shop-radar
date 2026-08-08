@@ -302,3 +302,99 @@ Leitura em massa sem N+1: uma query com window function busca os últimos
 
 Retorna `{ store, generatedAt, item, snapshots }` — a análise completa e os
 snapshots utilizados. 404 quando o produto não existe.
+
+## Descoberta (Etapa 02C.2)
+
+Todas as execuções são **manuais**: não há scheduler, cron ou worker.
+Os limites de custo são validados no backend e nunca confiados no cliente
+(`DEFAULT: maxTermsPerRun=5, maxProductsPerTerm=5`; teto rígido `10` / `20`).
+
+### GET /api/discovery/niches
+
+Catálogo estático de nichos (`src/config/niches.ts`) e os limites vigentes.
+
+```json
+{
+  "niches": [
+    { "key": "beauty", "name": "Beleza", "description": "…",
+      "termCount": 8, "terms": ["…"] }
+  ],
+  "limits": {
+    "defaults": { "maxTermsPerRun": 5, "maxProductsPerTerm": 5 },
+    "max": { "maxTermsPerRun": 10, "maxProductsPerTerm": 20 }
+  }
+}
+```
+
+### GET /api/discovery/searches
+
+Lista paginada de pesquisas salvas: `page` (default 1), `limit` (1–100),
+`includeInactive`. Retorna `{ store, page, limit, total, totalPages, items }`.
+
+### POST /api/discovery/searches
+
+Corpo: `{ name, type, query?, nicheKey?, terms? }` com
+`type ∈ { keyword, product_name, niche }`.
+`keyword`/`product_name` exigem `query`; `niche` exige `nicheKey` existente no
+catálogo (os termos são resolvidos no servidor). Retorna `{ search }`.
+Erros: `validation_error` (400).
+
+### GET/PATCH /api/discovery/searches/:searchId
+
+`GET` retorna `{ search }` (404 quando inexistente).
+`PATCH` aceita `{ name?, query?, terms?, active? }` — desativar é um arquivamento
+lógico; nada é apagado.
+
+### POST /api/discovery/searches/:searchId/run
+
+Executa a pesquisa salva. Corpo opcional:
+`{ maxTermsPerRun?, maxProductsPerTerm? }` (sempre limitado pelo teto rígido).
+Os termos são processados **sequencialmente**, um provider call por termo.
+
+```json
+{
+  "search": { "…": "…", "runCount": 3, "lastRunAt": "…" },
+  "run": {
+    "startedAt": "…", "finishedAt": "…", "termsExecuted": 5,
+    "received": 25, "uniqueProducts": 21,
+    "productsCreated": 12, "productsUpdated": 9,
+    "snapshotsCreated": 18, "snapshotsSkipped": 3,
+    "discoveriesCreated": 21, "discoveriesSkipped": 0
+  },
+  "limits": { "maxTermsPerRun": 5, "maxProductsPerTerm": 5 },
+  "terms": [{ "term": "…", "status": "ok", "received": 5, "productIds": ["…"] }],
+  "errors": [{ "term": "…", "status": "failed", "message": "provider_timeout" }],
+  "products": [
+    { "id": "…", "name": "…", "thumbnail": null, "productUrl": null,
+      "sellerName": "…", "currency": "USD", "price": 19.9,
+      "soldCount": 140, "gmv": null,
+      "trendStatus": "insufficient_data", "trendEvidence": "low",
+      "snapshotCount": 1 }
+  ]
+}
+```
+
+Um termo com falha **não aborta a execução**: ele entra em `errors` com uma
+mensagem normalizada (`provider_timeout`, `provider_not_configured`,
+`provider_invalid_response`, `provider_error`) — detalhes de vendor/token nunca
+vazam para o cliente. `503 not_configured` quando o provider não está
+configurado.
+
+### POST /api/discovery/quick-search
+
+Execução avulsa (sem persistir a pesquisa).
+Corpo: `{ query, type, maxProductsPerTerm? }`. Mesma resposta do `/run`, com
+`search: null` e `quick: { type, query }`.
+
+### GET /api/discovery/products/:productId
+
+Origem da descoberta ("Descoberto por"). Somente leitura — o provider externo
+nunca é chamado aqui. `limit` 1–100 (default 50).
+
+```json
+{ "store": "postgres",
+  "discoveries": [
+    { "id": "…", "productId": "…", "searchId": "…", "searchName": "Beleza",
+      "searchType": "niche", "term": "lip gloss", "discoveredAt": "…" }
+  ] }
+```
