@@ -21,6 +21,7 @@ import { Route as LabsProductMetricsRouteImport } from './routes/labs.product-me
 import { Route as LabsProductTrendsRouteImport } from './routes/labs.product-trends'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
+import { Route as ApiDiscoveryNichesRouteImport } from './routes/api/discovery/niches'
 import { Route as ApiProductsIndexRouteImport } from './routes/api/products/index'
 import { Route as ApiProductsProductIdRouteImport } from './routes/api/products/$productId'
 import { Route as ApiProductsSearchRouteImport } from './routes/api/products/search'
@@ -91,6 +92,11 @@ const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
   path: '/products/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDiscoveryNichesRoute = ApiDiscoveryNichesRouteImport.update({
+  id: '/api/discovery/niches',
+  path: '/api/discovery/niches',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiProductsIndexRoute = ApiProductsIndexRouteImport.update({
   id: '/api/products/',
   path: '/api/products/',
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/labs/product-trends': typeof LabsProductTrendsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/': typeof ProductsIndexRoute
+  '/api/discovery/niches': typeof ApiDiscoveryNichesRoute
   '/api/products/$productId': typeof ApiProductsProductIdRoute
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/products/': typeof ApiProductsIndexRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/labs/product-trends': typeof LabsProductTrendsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products': typeof ProductsIndexRoute
+  '/api/discovery/niches': typeof ApiDiscoveryNichesRoute
   '/api/products/$productId': typeof ApiProductsProductIdRoute
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/products': typeof ApiProductsIndexRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/labs/product-trends': typeof LabsProductTrendsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/': typeof ProductsIndexRoute
+  '/api/discovery/niches': typeof ApiDiscoveryNichesRoute
   '/api/products/$productId': typeof ApiProductsProductIdRoute
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/products/': typeof ApiProductsIndexRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/labs/product-trends'
     | '/products/$productId'
     | '/products/'
+    | '/api/discovery/niches'
     | '/api/products/$productId'
     | '/api/products/search'
     | '/api/products/'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/labs/product-trends'
     | '/products/$productId'
     | '/products'
+    | '/api/discovery/niches'
     | '/api/products/$productId'
     | '/api/products/search'
     | '/api/products'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/labs/product-trends'
     | '/products/$productId'
     | '/products/'
+    | '/api/discovery/niches'
     | '/api/products/$productId'
     | '/api/products/search'
     | '/api/products/'
@@ -294,6 +306,7 @@ export interface RootRouteChildren {
   LabsProductTrendsRoute: typeof LabsProductTrendsRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  ApiDiscoveryNichesRoute: typeof ApiDiscoveryNichesRoute
   ApiProductsProductIdRoute: typeof ApiProductsProductIdRoute
   ApiProductsSearchRoute: typeof ApiProductsSearchRoute
   ApiProductsIndexRoute: typeof ApiProductsIndexRoute
@@ -391,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/discovery/niches': {
+      id: '/api/discovery/niches'
+      path: '/api/discovery/niches'
+      fullPath: '/api/discovery/niches'
+      preLoaderRoute: typeof ApiDiscoveryNichesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/products/': {
       id: '/api/products/'
       path: '/api/products'
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   LabsProductTrendsRoute: LabsProductTrendsRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  ApiDiscoveryNichesRoute: ApiDiscoveryNichesRoute,
   ApiProductsProductIdRoute: ApiProductsProductIdRoute,
   ApiProductsSearchRoute: ApiProductsSearchRoute,
   ApiProductsIndexRoute: ApiProductsIndexRoute,
