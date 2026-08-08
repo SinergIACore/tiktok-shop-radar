@@ -160,3 +160,32 @@ Nenhuma migration nova foi necessária: os índices de 0001 atendem as consultas
 | `snapshots24h`        | `product_snapshots.observed_at >= now() - interval '24 hours'` |
 
 Nenhuma migration nova: os índices da migration 0001 atendem essas consultas.
+
+## Migration 0002 — descoberta e pesquisa (Etapa 02C.2)
+
+Arquivo: `db/migrations/0002_discovery_searches_and_product_discoveries.sql`
+(incremental; a 0001 não foi alterada). Aplicar com `npm run migrate`.
+
+### discovery_searches — a intenção de busca
+
+| Coluna       | Tipo        | Observações                                        |
+| ------------ | ----------- | -------------------------------------------------- |
+| `id`         | uuid PK     |                                                     |
+| `name`       | text        | Rótulo exibido na UI                                |
+| `type`       | text        | `keyword` \| `product_name` \| `niche`              |
+| `query`      | text NULL   | Termo livre (keyword/product_name)                  |
+| `niche_key`  | text NULL   | Chave do catálogo estático de nichos                |
+| `terms`      | text[]      | Termos efetivamente executáveis                     |
+| `active`     | boolean     | `false` = arquivamento lógico (nada é apagado)      |
+| `run_count`  | integer     | Execuções manuais acumuladas                        |
+| `last_run_at`| timestamptz | Última execução                                     |
+
+### product_discoveries — a origem da descoberta
+
+Relação N-N entre produto e pesquisa/termo, com `UNIQUE (product_id,
+search_id, term)` para não duplicar a mesma origem entre execuções. O produto
+continua sendo criado/atualizado exclusivamente pelo `ProductIngestionService`
+(mesma deduplicação de snapshots de 5 minutos da Etapa 02B.1); a descoberta
+apenas registra **por qual pesquisa e termo** ele apareceu.
+
+Índices: `product_id`, `search_id` e `discovered_at DESC`.

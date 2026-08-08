@@ -238,3 +238,29 @@ produzem velocidade e não contam como observação válida de vendas.
 
 Tendência observada ≠ previsão: esta etapa descreve o passado. Não há Viral
 Score, ranking inteligente nem projeção futura.
+
+## Camada de descoberta (Etapa 02C.2)
+
+```
+DiscoverySearch (intenção)
+        ↓ execução manual
+DiscoveryService
+        ↓ um termo por vez (custo controlado)
+ProductDataProvider → Normalizer → ProductIngestionService
+        ↓                                     ↓
+ProductDiscovery (origem)            Product + ProductSnapshot
+        ↓
+ProductReadRepository.listProductsByIds → trend-engine (02C.1) → UI
+```
+
+Regras que a etapa preserva:
+
+- A descoberta **não** duplica ingestão: ela reutiliza o
+  `ProductIngestionService` e a deduplicação de snapshots existente.
+- A descoberta **não** calcula tendência: o status vem sempre do motor puro da
+  Etapa 02C.1.
+- Nenhuma execução é automática. Não existe scheduler, cron nem worker.
+- Limites de custo (`maxTermsPerRun`, `maxProductsPerTerm`) são validados no
+  backend, com teto rígido, e nunca confiados no cliente.
+- Termos são executados em sequência; falha em um termo não aborta a execução.
+- Nenhum segredo chega ao frontend: a UI fala apenas com `/api/discovery/*`.
