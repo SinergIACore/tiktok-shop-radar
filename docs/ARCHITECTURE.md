@@ -66,6 +66,14 @@ Definido em `src/styles.css` com tokens `oklch` (tema escuro como padrão).
 Cores semânticas dedicadas: `growth`, `alert`, `opportunity`, `viral`.
 Componentes não usam cores literais.
 
+## Runtime de produção
+
+Build: Vite + TanStack Start, empacotado pelo Nitro com preset `node-server`.
+Output em `.output/`, entrada `.output/server/index.mjs`, executado por Node 22
+dentro de um container Docker (`docker/Dockerfile`), ouvindo em `0.0.0.0:3000`
+(`PORT` respeitado). SSR e as rotas de servidor (`/api/products/search`)
+executam nesse mesmo processo Node, onde `process.env` está disponível.
+
 ## Portabilidade
 
 - Nenhum SDK, endpoint ou serviço proprietário de plataforma de
@@ -73,3 +81,6 @@ Componentes não usam cores literais.
 - Toda a stack é open source e executável em qualquer host Node.
 - O roteamento é fornecido por TanStack Router, que já acompanha o template
   base do projeto (ver DECISIONS.md).
+- `@lovable.dev/vite-tanstack-config` é `devDependency` de build (pacote npm
+  público, MIT). Não participa do runtime: a imagem final contém apenas
+  `.output/`. Ver D-009.

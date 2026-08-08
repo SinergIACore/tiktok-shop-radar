@@ -40,3 +40,32 @@ processo de start) ainda não foram definidas.
 
 Miniaturas de produtos são imagens geradas e versionadas em `src/assets`, para
 evitar dependência de URLs externas.
+
+## D-008 — Runtime de produção: Node 22 + Nitro `node-server`
+
+O deploy via Nixpacks falhou por detectar Node 18 (EOL). A produção passa a ser
+Docker com `node:22-alpine` e build Nitro com preset `node-server`, iniciado por
+`node .output/server/index.mjs`. Cloudflare Workers, Deno e serverless
+proprietário estão descartados como runtime. `vite preview` não é servidor de
+produção.
+
+## D-009 — `@lovable.dev/vite-tanstack-config` mantida (build-time)
+
+Auditoria: o pacote é uma `devDependency` que apenas compõe plugins Vite
+(TanStack Start, React, Tailwind, tsconfig-paths, Nitro) durante o build. Não há
+importação em runtime — o output `.output/server/index.mjs` não a referencia.
+Ele força preset Cloudflare **somente** quando detecta o sandbox da plataforma
+(`LOVABLE_SANDBOX` / `DEV_SERVER__PROJECT_PATH`); fora dele, o override
+`nitro: { preset: "node-server" }` do `vite.config.ts` prevalece — verificado no
+build (`.output/nitro.json` → `"preset": "node-server"`).
+
+Decisão: **não substituir agora**. É pacote npm público (MIT), presente apenas
+no estágio builder do Docker e ausente da imagem final. Substituí-lo por config
+Vite/TanStack/Nitro manual continua possível a qualquer momento, sem impacto no
+runtime, e fica registrado como opção futura.
+
+## D-010 — `npm install` no Dockerfile
+
+O repositório versiona `bun.lock` e não `package-lock.json`, portanto `npm ci`
+não é aplicável. Se builds determinísticos se tornarem requisito, gerar e
+versionar `package-lock.json` (ou usar imagem com Bun) em etapa própria.

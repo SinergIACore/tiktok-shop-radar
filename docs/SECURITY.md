@@ -25,3 +25,16 @@
 - Mensagens de erro repassam o texto do provider truncado (500 chars) e não
   incluem credenciais.
 - Não há autenticação, sessão, cookie ou armazenamento de credenciais.
+
+## Estado atual (Etapa 02A.2 — Node/Docker)
+
+- Segredos (`APIFY_API_TOKEN`, `APIFY_PRODUCT_ACTOR_ID`, `APIFY_TIMEOUT_MS`) são
+  variáveis de ambiente do container, injetadas pelo EasyPanel em runtime. Não
+  entram no build nem na imagem.
+- Nenhuma variável sensível usa prefixo `VITE_`, portanto nada disso chega ao
+  bundle do navegador; a leitura ocorre apenas dentro do handler server-side.
+- `.dockerignore` exclui `.env` e `.env.*` (mantendo apenas `.env.example`), de
+  modo que arquivos de segredo nunca entram no contexto de build.
+- A imagem final copia somente `.output/`; código-fonte, `node_modules` de
+  desenvolvimento e histórico Git ficam fora do runtime, e o processo roda com o
+  usuário não-root `node`.
