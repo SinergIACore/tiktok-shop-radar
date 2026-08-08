@@ -122,7 +122,7 @@ describe("analyzeProductTrend", () => {
     expect(result.sales.positiveIntervals).toBe(3);
     expect(result.sales.neutralIntervals).toBe(1);
     expect(result.sales.consistency).toBe(0.75);
-    expect(result.evidence).toBe("high");
+    expect(result.evidence).toBe("medium"); // 5 valid snapshots (high requires 6+)
   });
 
   it("N. velocityPrevious = 0 => velocityRatio NULL", () => {
