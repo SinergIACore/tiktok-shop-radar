@@ -152,3 +152,48 @@ Retorna o produto persistido e seus snapshots ordenados por `observedAt ASC`.
 
 > `GET /api/products/search` permanece inalterado: consulta externa sem
 > persistência (ver D-012).
+
+## GET /api/labs/products/metrics
+
+Leitura real (somente SELECT) de `products` + `product_snapshots`. Não chama o
+provider externo e nunca grava. Parâmetro opcional `limit` (1–200, padrão 50).
+
+```json
+{
+  "store": "postgres",
+  "items": [
+    {
+      "id": "...",
+      "source": "apify",
+      "sourceProductId": "...",
+      "name": "...",
+      "thumbnail": "...",
+      "productUrl": "...",
+      "sellerName": "...",
+      "snapshotCount": 2,
+      "latest": {
+        "observedAt": "...",
+        "price": 57.99,
+        "soldCount": 9551,
+        "rating": 4.7,
+        "reviewCount": 1206,
+        "sellerVideoCount": 3041,
+        "gmvContribution": 553862.49
+      },
+      "previous": { "observedAt": "...", "price": 57.99, "soldCount": 9548, "reviewCount": 1200 },
+      "metrics": {
+        "soldCountDelta": 3,
+        "gmvDelta": 173.97,
+        "priceDelta": 0,
+        "reviewCountDelta": 6,
+        "sellerVideoCountDelta": 0,
+        "timeDeltaHours": 2,
+        "salesVelocity": 1.5
+      }
+    }
+  ]
+}
+```
+
+Produtos com apenas 1 snapshot aparecem normalmente com `previous: null` e
+todas as métricas `null`. Erros: 500 `database_error`.

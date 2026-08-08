@@ -82,6 +82,32 @@ Regras:
   (`observedAt ASC`) e tela LAB `/labs/product-history`.
 - Dashboard e `/products` continuam com mocks. Ver `DATABASE.md`.
 
+## Leitura e métricas (Etapa 02B.2)
+
+```
+GET /api/labs/products/metrics
+        │
+        ▼
+ProductReadRepository  (src/server/read/)
+        ├── PostgresProductReadRepository (window function, sem N+1)
+        └── MemoryProductReadRepository   (dev sem banco / testes)
+        │
+        ▼
+computeProductMetrics  (src/server/metrics/product-metrics.ts — puro)
+        │
+        ▼
+LAB /labs/product-metrics
+```
+
+Separação de responsabilidades:
+
+- Provider → coleta externa
+- IngestionService → escrita
+- Repository → leitura (nunca chama provider, nunca grava)
+- Metrics → cálculo puro
+
+Dashboard e `/products` continuam mockados.
+
 As demais integrações (AIProvider, StorageProvider, VideoProvider,
 TranscriptionProvider) continuam não implementadas.
 

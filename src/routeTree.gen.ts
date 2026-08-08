@@ -16,11 +16,13 @@ import { Route as LibraryRouteImport } from './routes/library'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LabsProductDataRouteImport } from './routes/labs.product-data'
 import { Route as LabsProductHistoryRouteImport } from './routes/labs.product-history'
+import { Route as LabsProductMetricsRouteImport } from './routes/labs.product-metrics'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
 import { Route as ApiProductsSearchRouteImport } from './routes/api/products/search'
 import { Route as ApiLabsProductsIndexRouteImport } from './routes/api/labs/products/index'
 import { Route as ApiLabsProductsIngestRouteImport } from './routes/api/labs/products/ingest'
+import { Route as ApiLabsProductsMetricsRouteImport } from './routes/api/labs/products/metrics'
 import { Route as ApiLabsProductsProductIdHistoryRouteImport } from './routes/api/labs/products/$productId.history'
 
 const IndexRoute = IndexRouteImport.update({
@@ -58,6 +60,11 @@ const LabsProductHistoryRoute = LabsProductHistoryRouteImport.update({
   path: '/labs/product-history',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LabsProductMetricsRoute = LabsProductMetricsRouteImport.update({
+  id: '/labs/product-metrics',
+  path: '/labs/product-metrics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
   id: '/products/',
   path: '/products/',
@@ -83,6 +90,11 @@ const ApiLabsProductsIngestRoute = ApiLabsProductsIngestRouteImport.update({
   path: '/api/labs/products/ingest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLabsProductsMetricsRoute = ApiLabsProductsMetricsRouteImport.update({
+  id: '/api/labs/products/metrics',
+  path: '/api/labs/products/metrics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLabsProductsProductIdHistoryRoute =
   ApiLabsProductsProductIdHistoryRouteImport.update({
     id: '/api/labs/products/$productId/history',
@@ -98,10 +110,12 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/labs/product-data': typeof LabsProductDataRoute
   '/labs/product-history': typeof LabsProductHistoryRoute
+  '/labs/product-metrics': typeof LabsProductMetricsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/': typeof ProductsIndexRoute
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
+  '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
   '/api/labs/products/': typeof ApiLabsProductsIndexRoute
   '/api/labs/products/$productId/history': typeof ApiLabsProductsProductIdHistoryRoute
 }
@@ -113,10 +127,12 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/labs/product-data': typeof LabsProductDataRoute
   '/labs/product-history': typeof LabsProductHistoryRoute
+  '/labs/product-metrics': typeof LabsProductMetricsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products': typeof ProductsIndexRoute
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
+  '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
   '/api/labs/products': typeof ApiLabsProductsIndexRoute
   '/api/labs/products/$productId/history': typeof ApiLabsProductsProductIdHistoryRoute
 }
@@ -129,10 +145,12 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/labs/product-data': typeof LabsProductDataRoute
   '/labs/product-history': typeof LabsProductHistoryRoute
+  '/labs/product-metrics': typeof LabsProductMetricsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/': typeof ProductsIndexRoute
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
+  '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
   '/api/labs/products/': typeof ApiLabsProductsIndexRoute
   '/api/labs/products/$productId/history': typeof ApiLabsProductsProductIdHistoryRoute
 }
@@ -146,10 +164,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/labs/product-data'
     | '/labs/product-history'
+    | '/labs/product-metrics'
     | '/products/$productId'
     | '/products/'
     | '/api/products/search'
     | '/api/labs/products/ingest'
+    | '/api/labs/products/metrics'
     | '/api/labs/products/'
     | '/api/labs/products/$productId/history'
   fileRoutesByTo: FileRoutesByTo
@@ -161,10 +181,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/labs/product-data'
     | '/labs/product-history'
+    | '/labs/product-metrics'
     | '/products/$productId'
     | '/products'
     | '/api/products/search'
     | '/api/labs/products/ingest'
+    | '/api/labs/products/metrics'
     | '/api/labs/products'
     | '/api/labs/products/$productId/history'
   id:
@@ -176,10 +198,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/labs/product-data'
     | '/labs/product-history'
+    | '/labs/product-metrics'
     | '/products/$productId'
     | '/products/'
     | '/api/products/search'
     | '/api/labs/products/ingest'
+    | '/api/labs/products/metrics'
     | '/api/labs/products/'
     | '/api/labs/products/$productId/history'
   fileRoutesById: FileRoutesById
@@ -192,10 +216,12 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   LabsProductDataRoute: typeof LabsProductDataRoute
   LabsProductHistoryRoute: typeof LabsProductHistoryRoute
+  LabsProductMetricsRoute: typeof LabsProductMetricsRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiProductsSearchRoute: typeof ApiProductsSearchRoute
   ApiLabsProductsIngestRoute: typeof ApiLabsProductsIngestRoute
+  ApiLabsProductsMetricsRoute: typeof ApiLabsProductsMetricsRoute
   ApiLabsProductsIndexRoute: typeof ApiLabsProductsIndexRoute
   ApiLabsProductsProductIdHistoryRoute: typeof ApiLabsProductsProductIdHistoryRoute
 }
@@ -251,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LabsProductHistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/labs/product-metrics': {
+      id: '/labs/product-metrics'
+      path: '/labs/product-metrics'
+      fullPath: '/labs/product-metrics'
+      preLoaderRoute: typeof LabsProductMetricsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/': {
       id: '/products/'
       path: '/products'
@@ -286,6 +319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLabsProductsIngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/labs/products/metrics': {
+      id: '/api/labs/products/metrics'
+      path: '/api/labs/products/metrics'
+      fullPath: '/api/labs/products/metrics'
+      preLoaderRoute: typeof ApiLabsProductsMetricsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/labs/products/$productId/history': {
       id: '/api/labs/products/$productId/history'
       path: '/api/labs/products/$productId/history'
@@ -304,10 +344,12 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   LabsProductDataRoute: LabsProductDataRoute,
   LabsProductHistoryRoute: LabsProductHistoryRoute,
+  LabsProductMetricsRoute: LabsProductMetricsRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiProductsSearchRoute: ApiProductsSearchRoute,
   ApiLabsProductsIngestRoute: ApiLabsProductsIngestRoute,
+  ApiLabsProductsMetricsRoute: ApiLabsProductsMetricsRoute,
   ApiLabsProductsIndexRoute: ApiLabsProductsIndexRoute,
   ApiLabsProductsProductIdHistoryRoute: ApiLabsProductsProductIdHistoryRoute,
 }

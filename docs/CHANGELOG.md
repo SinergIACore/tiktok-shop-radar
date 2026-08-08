@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## Etapa 02B.2 — Leitura real + métricas históricas básicas
+
+Adicionado:
+
+- `src/server/read/`: contrato `ProductReadRepository` e adapters Postgres
+  (query única com window function, sem N+1) e Memory (dev/testes).
+- `src/server/metrics/product-metrics.ts`: deltas brutos (`soldCountDelta`,
+  `gmvDelta`, `priceDelta`, `reviewCountDelta`, `sellerVideoCountDelta`),
+  `timeDeltaHours` e `salesVelocity`. NULL nunca vira zero.
+- `GET /api/labs/products/metrics` (somente leitura).
+- LAB `/labs/product-metrics` com tabela de métricas e histórico por produto.
+- `src/server/read/product-read.test.ts` (10 testes).
+
+Não alterado: Dashboard, `/products`, mocks, ingestão, provider Apify,
+Dockerfile, migrations.
+
 ## Hotfix 02B.1B — Erro SSR `__exportAll is not a function`
 
 Corrigido:
