@@ -44,20 +44,42 @@ export function normalizeProduct(
   const normalized: NormalizedProduct = {
     id: sourceProductId ?? `${source}-${index}`,
     name: asString(pick(item, ["title", "name", "product_name", "productName"])),
-    thumbnail: asString(
-      pick(item, ["image", "imageUrl", "thumbnail", "cover", "coverUrl", "main_image"]),
+    thumbnail:
+      asString(
+        pick(item, [
+          "mainImage",
+          "main_image",
+          "image",
+          "imageUrl",
+          "thumbnail",
+          "cover",
+          "coverUrl",
+        ]),
+      ) ?? firstImage(item),
+    productUrl: asString(pick(item, ["productUrl", "product_url", "url", "link"])),
+    category: asString(
+      pick(item, ["categoryPath", "category_path", "category", "categoryName", "category_name"]),
     ),
-    productUrl: asString(pick(item, ["url", "productUrl", "product_url", "link"])),
-    category: asString(pick(item, ["category", "categoryName", "category_name"])),
-    price: asNumber(pick(item, ["price", "sale_price", "salePrice", "min_price"])),
+    price: asNumber(
+      pick(item, ["currentPrice", "current_price", "price", "sale_price", "salePrice", "min_price"]),
+    ),
     currency: asString(pick(item, ["currency", "currencyCode", "currency_code"])),
-    soldCount: asNumber(pick(item, ["sold_count", "soldCount", "sales", "sale_count"])),
+    soldCount: asNumber(pick(item, ["soldCount", "sold_count", "sales", "sale_count"])),
     rating: asNumber(pick(item, ["rating", "score", "average_rating", "product_rating"])),
     reviewCount: asNumber(
-      pick(item, ["review_count", "reviewCount", "reviews", "comment_count"]),
+      pick(item, ["reviewCount", "review_count", "reviews", "comment_count"]),
     ),
-    sellerName: asString(pick(item, ["seller_name", "sellerName", "shop_name", "shopName"])),
-    creatorCount: asNumber(pick(item, ["creator_count", "creatorCount", "creators"])),
+    sellerName: asString(pick(item, ["sellerName", "seller_name", "shop_name", "shopName"])),
+    sellerVideoCount: asNumber(pick(item, ["sellerVideoCount", "seller_video_count"])),
+    gmvContribution: asNumber(pick(item, ["gmvContribution", "gmv_contribution"])),
+    brand: asString(pick(item, ["brand"])),
+    businessName: asString(pick(item, ["businessName", "business_name"])),
+    countryCode: asString(pick(item, ["countryCode", "country_code"])),
+    discountPercent: asNumber(pick(item, ["discountPercent", "discount_percent"])),
+    commentRate: asNumber(pick(item, ["commentRate", "comment_rate"])),
+    // Intentionally null: the Actor has no real creator-count field.
+    // sellerVideoCount is NOT a proxy for it.
+    creatorCount: null,
     source,
     sourceProductId,
   };
