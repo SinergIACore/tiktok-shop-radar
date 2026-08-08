@@ -93,6 +93,18 @@ export class MemoryProductReadRepository implements ProductReadRepository {
     return this.store.listSnapshots(productId);
   }
 
+  async listHistoriesForProducts(
+    productIds: string[],
+    historyLimit: number,
+  ): Promise<Record<string, StoredSnapshot[]>> {
+    const result: Record<string, StoredSnapshot[]> = {};
+    for (const productId of productIds) {
+      const snapshots = await this.store.listSnapshots(productId);
+      result[productId] = snapshots.slice(Math.max(0, snapshots.length - historyLimit));
+    }
+    return result;
+  }
+
   async getDashboardSummary(): Promise<DashboardSummary> {
     const products = await this.store.listProducts(Number.MAX_SAFE_INTEGER);
     const since = Date.now() - 24 * 60 * 60 * 1000;
