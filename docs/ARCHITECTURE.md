@@ -27,11 +27,33 @@ Regras:
 - Trocar mock por API significa criar uma nova implementação de repositório e
   alterar apenas a instância exportada em `src/services/*.service.ts`.
 
-## Providers (futuro)
+## Providers
 
-`src/services/providers/` está reservado para integrações externas
-(TikTokProvider, AIProvider, StorageProvider, VideoProvider,
-TranscriptionProvider). Nenhum provider foi implementado.
+`src/services/providers/product-data/` implementa a aquisição de dados
+externos de produtos (Etapa 02A):
+
+```
+UI (/labs/product-data)
+        │  fetch
+        ▼
+GET /api/products/search   (src/routes/api/products/search.ts — server-side)
+        │
+        ▼
+ProductDataProvider (interface)
+        │
+        ▼
+ApifyProductDataProvider  →  normalizeProduct  →  NormalizedProduct
+```
+
+Regras:
+
+- Componentes nunca acessam o formato bruto do provider.
+- Secrets são lidos apenas dentro do handler server-side.
+- Trocar de fornecedor = nova classe + uma linha em
+  `product-data/index.server.ts`. Ver `PROVIDERS.md`.
+
+As demais integrações (AIProvider, StorageProvider, VideoProvider,
+TranscriptionProvider) continuam não implementadas.
 
 ## Estado e leitura de dados
 

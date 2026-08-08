@@ -14,8 +14,10 @@ import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as CreativesRouteImport } from './routes/creatives'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as LabsProductDataRouteImport } from './routes/labs.product-data'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
+import { Route as ApiProductsSearchRouteImport } from './routes/api/products/search'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -42,6 +44,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LabsProductDataRoute = LabsProductDataRouteImport.update({
+  id: '/labs/product-data',
+  path: '/labs/product-data',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
   id: '/products/',
   path: '/products/',
@@ -52,6 +59,11 @@ const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
   path: '/products/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiProductsSearchRoute = ApiProductsSearchRouteImport.update({
+  id: '/api/products/search',
+  path: '/api/products/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,8 +71,10 @@ export interface FileRoutesByFullPath {
   '/creatives': typeof CreativesRoute
   '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
+  '/labs/product-data': typeof LabsProductDataRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/': typeof ProductsIndexRoute
+  '/api/products/search': typeof ApiProductsSearchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,8 +82,10 @@ export interface FileRoutesByTo {
   '/creatives': typeof CreativesRoute
   '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
+  '/labs/product-data': typeof LabsProductDataRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products': typeof ProductsIndexRoute
+  '/api/products/search': typeof ApiProductsSearchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,8 +94,10 @@ export interface FileRoutesById {
   '/creatives': typeof CreativesRoute
   '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
+  '/labs/product-data': typeof LabsProductDataRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/': typeof ProductsIndexRoute
+  '/api/products/search': typeof ApiProductsSearchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -89,8 +107,10 @@ export interface FileRouteTypes {
     | '/creatives'
     | '/library'
     | '/settings'
+    | '/labs/product-data'
     | '/products/$productId'
     | '/products/'
+    | '/api/products/search'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -98,8 +118,10 @@ export interface FileRouteTypes {
     | '/creatives'
     | '/library'
     | '/settings'
+    | '/labs/product-data'
     | '/products/$productId'
     | '/products'
+    | '/api/products/search'
   id:
     | '__root__'
     | '/'
@@ -107,8 +129,10 @@ export interface FileRouteTypes {
     | '/creatives'
     | '/library'
     | '/settings'
+    | '/labs/product-data'
     | '/products/$productId'
     | '/products/'
+    | '/api/products/search'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -117,8 +141,10 @@ export interface RootRouteChildren {
   CreativesRoute: typeof CreativesRoute
   LibraryRoute: typeof LibraryRoute
   SettingsRoute: typeof SettingsRoute
+  LabsProductDataRoute: typeof LabsProductDataRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  ApiProductsSearchRoute: typeof ApiProductsSearchRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -158,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/labs/product-data': {
+      id: '/labs/product-data'
+      path: '/labs/product-data'
+      fullPath: '/labs/product-data'
+      preLoaderRoute: typeof LabsProductDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/': {
       id: '/products/'
       path: '/products'
@@ -172,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/products/search': {
+      id: '/api/products/search'
+      path: '/api/products/search'
+      fullPath: '/api/products/search'
+      preLoaderRoute: typeof ApiProductsSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -181,8 +221,10 @@ const rootRouteChildren: RootRouteChildren = {
   CreativesRoute: CreativesRoute,
   LibraryRoute: LibraryRoute,
   SettingsRoute: SettingsRoute,
+  LabsProductDataRoute: LabsProductDataRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  ApiProductsSearchRoute: ApiProductsSearchRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

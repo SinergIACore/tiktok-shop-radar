@@ -1,0 +1,73 @@
+# PROVIDERS
+
+## ProductDataProvider
+
+Contrato em `src/services/providers/product-data/ProductDataProvider.ts`:
+
+```ts
+interface ProductDataProvider {
+  readonly name: string;
+  isConfigured(): boolean;
+  searchProducts(params: ProductSearchParams): Promise<ProductSearchResult>;
+}
+```
+
+A escolha do provider ativo acontece em um único lugar:
+`src/services/providers/product-data/index.server.ts`.
+
+## Provider atual: Apify
+
+**Por que:** é a forma mais rápida de obter dados reais de TikTok Shop sem
+scraping próprio, sem OAuth e sem aprovação da API oficial.
+
+**Endpoint oficial (Apify REST API v2):**
+
+```
+POST https://api.apify.com/v2/acts/{actorId}/run-sync-get-dataset-items?limit=N
+Authorization: Bearer <APIFY_API_TOKEN>
+Content-Type: application/json
+```
+
+Resposta: array JSON com os itens do dataset do Actor.
+Documentação: https://docs.apify.com/api/v2
+
+**Actor:** NÃO é fixado em código. É lido de `APIFY_PRODUCT_ACTOR_ID`
+(formato `username~actor-name`). Isso evita acoplamento a um Actor específico
+do marketplace.
+
+**Input enviado:** shape conservador e comum entre Actors de TikTok Shop
+(`keyword`, `keywords`, `searchQueries`, `maxItems`, `country`). Actors ignoram
+chaves desconhecidas.
+
+**Risco de schema:** cada Actor do marketplace tem output próprio e pode mudar
+sem aviso. Por isso a normalização (`normalizers/normalizeProduct.ts`) é
+defensiva: testa múltiplos nomes de campo e devolve `null` quando o dado não
+existe. Nenhum valor é inventado.
+
+**PENDÊNCIA DE VALIDAÇÃO HUMANA:** o Actor concreto (e portanto o schema e o
+custo exatos) precisa ser escolhido pelo responsável do projeto. Enquanto
+`APIFY_PRODUCT_ACTOR_ID` não estiver definido, a rota LAB responde
+"Provider de dados não configurado.".
+
+## Custo e limitações
+
+- Custo depende do Actor escolhido (modelo pay-per-event ou por compute unit)
+  somado ao plano Apify. Não há custo enquanto não houver token/Actor.
+- `run-sync-get-dataset-items` é síncrono; Actors lentos podem estourar o
+  timeout (`APIFY_TIMEOUT_MS`, padrão 60s).
+- Limite de itens desta etapa: 1 a 50.
+
+## Lock-in
+
+Baixo: a aplicação depende apenas da interface e do modelo normalizado.
+Trocar por `OfficialTikTokProductProvider` ou `CustomProductDataProvider`
+exige apenas uma nova classe e uma linha em `index.server.ts` — o frontend
+não muda.
+
+## Variáveis de ambiente (server-side)
+
+| Variável                 | Obrigatória | Descrição                          |
+| ------------------------ | ----------- | ---------------------------------- |
+| `APIFY_API_TOKEN`        | sim         | Token da conta Apify               |
+| `APIFY_PRODUCT_ACTOR_ID` | sim         | Actor, ex. `username~actor-name`   |
+| `APIFY_TIMEOUT_MS`       | não         | Timeout da chamada (padrão 60000)  |

@@ -1,5 +1,17 @@
 # NEXT_STEP
 
+## Pendência imediata da Etapa 02A
+
+Definir o Actor Apify (`APIFY_PRODUCT_ACTOR_ID`) e o token na VPS/container,
+validar o schema real retornado e ajustar o normalizer se necessário.
+
+## Etapa 02B sugerida (não implementada)
+
+Persistir/normalizar os produtos reais e decidir quando substituir os mocks
+do Dashboard e de `/products`.
+
+---
+
 Sugestão de próxima etapa (NÃO implementada):
 
 ## Etapa 02 — Contrato de dados e camada de API própria (ainda sem provedores externos)
