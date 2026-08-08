@@ -249,6 +249,51 @@ SELECT count(*)::bigint AS total
   }
 
   /**
+   * Bulk history (Stage 02C.1): one query for every requested product, with a
+   * window function limiting the number of snapshots per product.
+   */
+  async listHistoriesForProducts(
+    productIds: string[],
+    historyLimit: number,
+  ): Promise<Record<string, StoredSnapshot[]>> {
+    const result: Record<string, StoredSnapshot[]> = {};
+    if (productIds.length === 0) return result;
+    const limit = Math.min(Math.max(Math.trunc(historyLimit), 2), 200);
+    const pool = await getPool();
+    const { rows } = await pool.query(
+      `WITH ranked AS (
+         SELECT s.*, row_number() OVER (
+                  PARTITION BY s.product_id ORDER BY s.observed_at DESC, s.id DESC) AS rn
+           FROM product_snapshots s
+          WHERE s.product_id = ANY($1::uuid[])
+       )
+       SELECT id, product_id, observed_at, price, sold_count, rating, review_count,
+              seller_video_count, gmv_contribution, discount_percent, comment_rate, created_at
+         FROM ranked WHERE rn <= $2
+        ORDER BY product_id, observed_at ASC`,
+      [productIds, limit],
+    );
+    for (const row of rows) {
+      const productId = String(row["product_id"]);
+      (result[productId] ??= []).push({
+        id: String(row["id"]),
+        productId,
+        observedAt: iso(row["observed_at"]),
+        price: num(row["price"]),
+        soldCount: num(row["sold_count"]),
+        rating: num(row["rating"]),
+        reviewCount: num(row["review_count"]),
+        sellerVideoCount: num(row["seller_video_count"]),
+        gmvContribution: num(row["gmv_contribution"]),
+        discountPercent: num(row["discount_percent"]),
+        commentRate: num(row["comment_rate"]),
+        createdAt: iso(row["created_at"]),
+      });
+    }
+    return result;
+  }
+
+  /**
    * Single aggregated query — no N+1, no history loaded.
    */
   async getDashboardSummary(): Promise<DashboardSummary> {
