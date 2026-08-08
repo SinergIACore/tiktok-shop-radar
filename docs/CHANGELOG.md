@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## Etapa 02A.3 — Ajuste do provider Apify real
+
+Alterado:
+
+- Timeout padrão do provider: 60000 → 120000 ms (`APIFY_TIMEOUT_MS`, `.env.example`).
+- `normalizeProduct.ts`: mapeamento do schema real do Actor
+  `lurkapi~tiktok-shop-scraper` (`currentPrice`, `mainImage`, `imageUrls[0]`,
+  `categoryPath`, `sellerVideoCount`, `gmvContribution`, `brand`,
+  `businessName`, `countryCode`, `discountPercent`, `commentRate`).
+  `creatorCount` permanece `null`.
+- Tipo `NormalizedProduct`: novos campos, nenhum removido.
+- `/labs/product-data`: colunas Shop Videos e GMV no lugar de Criadores.
+- Docs: PROVIDERS, API, CHANGELOG, NEXT_STEP.
+
+Adicionado/Removido: nada.
+
+
 ## Etapa 02A.2 — Preparação para deploy Node 22 + Docker + EasyPanel
 
 Adicionado:
