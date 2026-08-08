@@ -31,6 +31,19 @@ function asNumber(value: unknown): number | null {
   return null;
 }
 
+/** First usable URL in imageUrls[], used as thumbnail fallback. */
+function firstImage(item: ExternalProduct): string | null {
+  const list = item["imageUrls"] ?? item["image_urls"] ?? item["images"];
+  if (Array.isArray(list)) {
+    for (const entry of list) {
+      const value = asString(entry);
+      if (value) return value;
+    }
+  }
+  return null;
+}
+
+
 export function normalizeProduct(
   item: ExternalProduct,
   source: string,
