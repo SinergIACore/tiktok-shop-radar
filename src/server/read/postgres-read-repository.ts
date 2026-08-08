@@ -1,10 +1,16 @@
 import { computeProductMetrics, EMPTY_METRICS } from "../metrics/product-metrics";
 import type { MetricSnapshot } from "../metrics/product-metrics";
 import { PersistenceError, type StoredSnapshot } from "../persistence/types";
-import type { ProductReadRepository, ProductWithMetrics } from "./types";
+import type {
+  ProductListPage,
+  ProductListQuery,
+  ProductListSort,
+  ProductReadRepository,
+  ProductWithMetrics,
+} from "./types";
 
 /**
- * PostgreSQL read repository (Stage 02B.2).
+ * PostgreSQL read repository (Stage 02B.2 / 02B.3).
  * Read-only: only SELECT statements. The pg driver is imported lazily so it
  * never reaches the client bundle.
  */
@@ -45,6 +51,10 @@ function num(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function text(value: unknown): string | null {
+  return value === null || value === undefined ? null : String(value);
+}
+
 function snapshotFrom(row: Record<string, unknown>, prefix: string): MetricSnapshot | null {
   const observedAt = row[`${prefix}observed_at`];
   if (observedAt === null || observedAt === undefined) return null;
@@ -66,11 +76,15 @@ function toProductWithMetrics(row: Record<string, unknown>): ProductWithMetrics 
     id: String(row["id"]),
     source: String(row["source"]),
     sourceProductId: String(row["source_product_id"]),
-    name: (row["name"] as string) ?? null,
-    thumbnail: (row["thumbnail"] as string) ?? null,
-    productUrl: (row["product_url"] as string) ?? null,
-    sellerName: (row["seller_name"] as string) ?? null,
-    currency: (row["currency"] as string) ?? null,
+    name: text(row["name"]),
+    thumbnail: text(row["thumbnail"]),
+    productUrl: text(row["product_url"]),
+    category: text(row["category"]),
+    sellerName: text(row["seller_name"]),
+    brand: text(row["brand"]),
+    businessName: text(row["business_name"]),
+    countryCode: text(row["country_code"]),
+    currency: text(row["currency"]),
     firstSeenAt: iso(row["first_seen_at"]),
     lastSeenAt: iso(row["last_seen_at"]),
     snapshotCount: num(row["snapshot_count"]) ?? 0,
@@ -89,19 +103,22 @@ const SNAPSHOT_COLS = (alias: string, prefix: string) => `
   ${alias}.seller_video_count AS ${prefix}seller_video_count,
   ${alias}.gmv_contribution AS ${prefix}gmv_contribution`;
 
+const PRODUCT_COLS = `p.id, p.source, p.source_product_id, p.name, p.thumbnail, p.product_url,
+       p.category, p.seller_name, p.brand, p.business_name, p.country_code, p.currency,
+       p.first_seen_at, p.last_seen_at`;
+
 /**
  * Single query, no N+1: a window function ranks the snapshots per product and
  * the two most recent rows are joined back onto the product.
  */
-const METRICS_QUERY = (whereClause: string, limitClause: string) => `
+const METRICS_QUERY = (whereClause: string, limitClause: string, orderBy = "p.last_seen_at DESC") => `
 WITH ranked AS (
   SELECT s.*,
          row_number() OVER (PARTITION BY s.product_id ORDER BY s.observed_at DESC, s.id DESC) AS rn,
          count(*) OVER (PARTITION BY s.product_id) AS snapshot_count
     FROM product_snapshots s
 )
-SELECT p.id, p.source, p.source_product_id, p.name, p.thumbnail, p.product_url,
-       p.seller_name, p.currency, p.first_seen_at, p.last_seen_at,
+SELECT ${PRODUCT_COLS},
        COALESCE(l.snapshot_count, 0) AS snapshot_count,
        ${SNAPSHOT_COLS("l", "l_")},
        ${SNAPSHOT_COLS("v", "p_")}
@@ -109,8 +126,43 @@ SELECT p.id, p.source, p.source_product_id, p.name, p.thumbnail, p.product_url,
   LEFT JOIN ranked l ON l.product_id = p.id AND l.rn = 1
   LEFT JOIN ranked v ON v.product_id = p.id AND v.rn = 2
   ${whereClause}
- ORDER BY p.last_seen_at DESC
+ ORDER BY ${orderBy}
  ${limitClause}`;
+
+const SORT_EXPRESSIONS: Record<ProductListSort, string> = {
+  soldCount: "l.sold_count",
+  gmv: "l.gmv_contribution",
+  soldCountDelta: "(l.sold_count - v.sold_count)",
+  gmvDelta: "(l.gmv_contribution - v.gmv_contribution)",
+  salesVelocity:
+    "CASE WHEN v.observed_at IS NULL OR l.observed_at <= v.observed_at THEN NULL ELSE (l.sold_count - v.sold_count) / (EXTRACT(EPOCH FROM (l.observed_at - v.observed_at)) / 3600) END",
+  lastObservedAt: "l.observed_at",
+};
+
+/** Builds the WHERE clause + bound values for the listing filters. */
+function buildFilters(query: ProductListQuery) {
+  const clauses: string[] = [];
+  const values: unknown[] = [];
+  const push = (sql: string, value: unknown) => {
+    values.push(value);
+    clauses.push(sql.replace("$?", `$${values.length}`));
+  };
+
+  if (query.search) push("p.name ILIKE $?", `%${query.search}%`);
+  if (query.seller) push("p.seller_name ILIKE $?", `%${query.seller}%`);
+  if (query.category) push("p.category = $?", query.category);
+  if (query.hasHistory) clauses.push("COALESCE(l.snapshot_count, 0) >= 2");
+  if (query.minPrice !== null && query.minPrice !== undefined) push("l.price >= $?", query.minPrice);
+  if (query.maxPrice !== null && query.maxPrice !== undefined) push("l.price <= $?", query.maxPrice);
+  if (query.minSold !== null && query.minSold !== undefined)
+    push("l.sold_count >= $?", query.minSold);
+  if (query.minReviews !== null && query.minReviews !== undefined)
+    push("l.review_count >= $?", query.minReviews);
+  if (query.minRating !== null && query.minRating !== undefined)
+    push("l.rating >= $?", query.minRating);
+
+  return { where: clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "", values };
+}
 
 export class PostgresProductReadRepository implements ProductReadRepository {
   readonly name = "postgres";
@@ -121,6 +173,41 @@ export class PostgresProductReadRepository implements ProductReadRepository {
       Math.min(Math.max(limit, 1), 200),
     ]);
     return rows.map(toProductWithMetrics);
+  }
+
+  async listProductsPage(query: ProductListQuery): Promise<ProductListPage> {
+    const pool = await getPool();
+    const { where, values } = buildFilters(query);
+
+    const countSql = `
+WITH ranked AS (
+  SELECT s.product_id,
+         row_number() OVER (PARTITION BY s.product_id ORDER BY s.observed_at DESC, s.id DESC) AS rn,
+         count(*) OVER (PARTITION BY s.product_id) AS snapshot_count,
+         s.price, s.sold_count, s.rating, s.review_count
+    FROM product_snapshots s
+)
+SELECT count(*)::bigint AS total
+  FROM products p
+  LEFT JOIN ranked l ON l.product_id = p.id AND l.rn = 1
+  ${where}`;
+    const countResult = await pool.query(countSql, values);
+    const total = num(countResult.rows[0]?.["total"]) ?? 0;
+    const totalPages = total === 0 ? 0 : Math.ceil(total / query.limit);
+    const page = totalPages > 0 ? Math.min(query.page, totalPages) : 1;
+    const offset = (page - 1) * query.limit;
+
+    const direction = query.direction === "asc" ? "ASC" : "DESC";
+    const orderBy = `${SORT_EXPRESSIONS[query.sort]} ${direction} NULLS LAST, p.last_seen_at DESC`;
+    const listValues = [...values, query.limit, offset];
+    const sql = METRICS_QUERY(
+      where,
+      `LIMIT $${listValues.length - 1} OFFSET $${listValues.length}`,
+      orderBy,
+    );
+    const { rows } = await pool.query(sql, listValues);
+
+    return { page, limit: query.limit, total, totalPages, items: rows.map(toProductWithMetrics) };
   }
 
   async getProductWithMetrics(productId: string): Promise<ProductWithMetrics | null> {
