@@ -71,3 +71,84 @@ Formato: `{ "error": { "code": "...", "message": "..." } }`.
 Mensagens nunca contêm token ou headers de autenticação.
 
 Nenhuma autenticação é exigida nesta etapa.
+
+---
+
+## POST /api/labs/products/ingest
+
+Rota **LAB** (Etapa 02B.1). Executa o provider externo uma única vez, por ação
+explícita do usuário, e persiste `Product` + `ProductSnapshot`.
+Não há execução automática, polling, loop ou scheduler.
+
+### Corpo
+
+```json
+{ "keyword": "women dress", "limit": 5 }
+```
+
+`limit`: 1–20 (limite conservador do LAB, pois o provider é pago).
+
+### Resposta 200
+
+```json
+{
+  "ok": true,
+  "source": "apify",
+  "store": "postgres",
+  "query": { "keyword": "women dress", "limit": 5 },
+  "ingestion": {
+    "received": 5,
+    "productsCreated": 5,
+    "productsUpdated": 0,
+    "snapshotsCreated": 5,
+    "snapshotsSkipped": 0
+  },
+  "productIds": ["..."]
+}
+```
+
+### Erros
+
+| Status | code               | Situação                                 |
+| ------ | ------------------ | ---------------------------------------- |
+| 400    | `validation_error` | JSON inválido ou keyword ausente         |
+| 503    | `not_configured`   | provider sem token/Actor                 |
+| 504    | `provider_timeout` | provider não respondeu a tempo           |
+| 502    | `provider_error`   | erro do provider                         |
+| 500    | `database_error`   | falha na persistência                    |
+
+Todas as respostas são JSON. Nenhum segredo, credencial ou stack trace é
+exposto.
+
+## GET /api/labs/products
+
+Lista os produtos persistidos (máx. 50). Não chama o provider externo.
+
+## GET /api/labs/products/:productId/history
+
+Retorna o produto persistido e seus snapshots ordenados por `observedAt ASC`.
+
+```json
+{
+  "product": { "id": "...", "name": "...", "firstSeenAt": "...", "lastSeenAt": "..." },
+  "snapshots": [
+    {
+      "observedAt": "2026-08-08T10:00:00.000Z",
+      "price": 57.99,
+      "soldCount": 9548,
+      "rating": 4.7,
+      "reviewCount": 1200,
+      "sellerVideoCount": 3041,
+      "gmvContribution": 553688.52
+    }
+  ],
+  "metrics": { "soldCountDelta": 242 }
+}
+```
+
+`soldCountDelta` é a diferença bruta entre os dois snapshots mais recentes;
+`null` quando algum dos valores é desconhecido. Erros: 404 `not_found`,
+500 `database_error`.
+
+> `GET /api/products/search` permanece inalterado: consulta externa sem
+> persistência (ver D-012).
