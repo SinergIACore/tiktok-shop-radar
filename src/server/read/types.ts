@@ -1,4 +1,5 @@
 import type { StoredProduct, StoredSnapshot } from "../persistence/types";
+import type { DashboardSummary } from "../dashboard/types";
 import type { MetricSnapshot, ProductMetricsResult } from "../metrics/product-metrics";
 
 /**
@@ -87,6 +88,8 @@ export interface ProductReadRepository {
   getProductWithMetrics(productId: string): Promise<ProductWithMetrics | null>;
   /** Chronological history (observedAt ASC). */
   listHistory(productId: string): Promise<StoredSnapshot[]>;
+  /** Objective aggregates for the dashboard (Stage 02B.4). */
+  getDashboardSummary(): Promise<DashboardSummary>;
 }
 
 export type { StoredProduct, StoredSnapshot };
