@@ -27,6 +27,15 @@ export interface NormalizedProduct {
   rating: number | null;
   reviewCount: number | null;
   sellerName: string | null;
+  /** Videos published by the seller/shop. NOT the number of creators. */
+  sellerVideoCount: number | null;
+  gmvContribution: number | null;
+  brand: string | null;
+  businessName: string | null;
+  countryCode: string | null;
+  discountPercent: number | null;
+  commentRate: number | null;
+  /** Stays null until a real creator-count field exists in the provider. */
   creatorCount: number | null;
   /** Provider identifier, e.g. "apify". */
   source: string;

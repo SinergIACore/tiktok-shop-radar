@@ -20,7 +20,7 @@ import {
  * normalize defensively, because each Actor has its own output schema.
  */
 const APIFY_BASE_URL = "https://api.apify.com/v2";
-const DEFAULT_TIMEOUT_MS = 60_000;
+const DEFAULT_TIMEOUT_MS = 120_000;
 
 export class ApifyProductDataProvider implements ProductDataProvider {
   readonly name = "apify";
