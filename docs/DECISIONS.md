@@ -69,3 +69,38 @@ runtime, e fica registrado como opção futura.
 O repositório versiona `bun.lock` e não `package-lock.json`, portanto `npm ci`
 não é aplicável. Se builds determinísticos se tornarem requisito, gerar e
 versionar `package-lock.json` (ou usar imagem com Bun) em etapa própria.
+
+## D-011 — Persistência: PostgreSQL + driver `pg`, sem ORM
+
+Não havia banco definido (D-001). Escolhido PostgreSQL provisionado pelo
+próprio EasyPanel/VPS, acessado pelo driver open source `pg`, com migrations
+SQL versionadas em `db/migrations/` e runner próprio (`scripts/migrate.mjs`).
+Motivo: zero lock-in, nenhuma dependência de backend gerenciado de plataforma,
+e nenhum ORM novo a manter nesta fase. Quando um ORM se justificar, ele poderá
+ser adotado sobre o mesmo esquema.
+
+Um adapter volátil em memória (`MemoryProductStore`) é usado quando
+`DATABASE_URL` não existe (sandbox de desenvolvimento) e nos testes
+automatizados. Ele nunca é usado como banco de produção.
+
+## D-012 — Consulta externa e ingestão histórica são operações separadas
+
+"External provider queries and historical ingestion are separate operations."
+
+`GET /api/products/search` continua sendo leitura externa pura, sem persistir
+nada. A gravação acontece exclusivamente por
+`POST /api/labs/products/ingest`. Motivo: o provider é pago e a leitura precisa
+permanecer barata, previsível e livre de efeitos colaterais.
+
+Fluxo canônico:
+
+```
+Provider → Normalizer → Ingestion Service → Product → ProductSnapshot
+```
+
+## D-013 — Deduplicação por janela + comparação de campos monitorados
+
+Estratégia mínima e reversível: snapshot ignorado somente se o anterior estiver
+dentro de 5 minutos E todos os campos monitorados forem idênticos. Não impede
+registrar mudanças reais. Alternativas (hash de ingestão, chave idempotente por
+run) ficam para quando houver coleta agendada.

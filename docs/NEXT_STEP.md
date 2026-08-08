@@ -1,37 +1,27 @@
 # NEXT_STEP
 
-## Estado após a Etapa 02A.3
+## Estado após a Etapa 02B.1
 
-Actor definido e validado (`lurkapi~tiktok-shop-scraper`), schema real mapeado
-e timeout em 120s. Falta apenas configurar `APIFY_API_TOKEN` e
-`APIFY_PRODUCT_ACTOR_ID` no ambiente de execução (VPS/EasyPanel).
+Camada persistente criada e validada: `products` + `product_snapshots` em
+PostgreSQL (driver `pg`, migrations SQL próprias), `ProductIngestionService`,
+rotas LAB de ingestão/histórico e tela `/labs/product-history`.
+Dashboard, `/products` e os mocks permanecem intocados.
 
-## Etapa 02B sugerida (não implementada)
+Pendências imediatas:
 
-Persistir/normalizar os produtos reais e decidir quando substituir os mocks
-do Dashboard e de `/products`.
+- Provisionar PostgreSQL no EasyPanel e definir `DATABASE_URL` (sem ela a
+  aplicação usa o store volátil em memória).
+- Rodar `npm run migrate` no ambiente de produção.
+- Validar a ingestão com o provider real (Apify) fora do sandbox.
 
+## Etapa 02B.2 sugerida (NÃO implementada)
 
----
+Repositório de leitura sobre os dados persistidos (`PostgresProductRepository`
+implementando `ProductRepository`) e decisão de quando/como substituir os mocks
+do Dashboard e de `/products`. Somente depois disso faz sentido discutir
+coleta agendada e métricas derivadas (velocidade, aceleração, Viral Score).
 
-Sugestão de próxima etapa (NÃO implementada):
+## Pendências herdadas
 
-## Etapa 02 — Contrato de dados e camada de API própria (ainda sem provedores externos)
-
-Escopo sugerido:
-
-1. Definir o contrato de leitura (`GET /products`, `GET /products/:id`,
-   `GET /products/:id/creatives`) em `/docs/API.md`.
-2. Criar `HttpProductRepository` / `HttpCreativeRepository` consumindo
-   `VITE_API_BASE_URL`, mantendo o repositório mockado como fallback
-   controlado por `appConfig.dataSource`.
-3. Definir se o backend será API Node própria ou Supabase externo
-   (decisão pendente, ver DECISIONS.md).
-
-## Pendências herdadas da Etapa 01
-
-- **Docker**: `Dockerfile` e `.dockerignore` não foram criados. Isso depende de
-  decidir o modo de execução em produção (build estático servido por Nginx vs.
-  servidor Node com SSR). Assim que essa decisão for tomada, a etapa de
-  containerização pode ser executada com segurança.
+- **Docker**: imagem existe (`docker/Dockerfile`); falta build validado no host.
 - **Roteador**: confirmar a manutenção do TanStack Router (D-002).

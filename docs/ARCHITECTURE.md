@@ -52,6 +52,36 @@ Regras:
 - Trocar de fornecedor = nova classe + uma linha em
   `product-data/index.server.ts`. Ver `PROVIDERS.md`.
 
+## Persistência (Etapa 02B.1)
+
+```
+POST /api/labs/products/ingest
+        │
+        ▼
+ProductDataProvider → normalizeProduct → NormalizedProduct
+        │
+        ▼
+ProductIngestionService  (src/server/ingestion/)
+        │
+        ▼
+ProductStore  (src/server/persistence/index.server.ts)
+        ├── PostgresProductStore  (DATABASE_URL definida)
+        └── MemoryProductStore    (dev sem banco / testes)
+        │
+        ▼
+products (identidade)  1 ── N  product_snapshots (observações)
+```
+
+Regras:
+
+- O provider não conhece persistência; o serviço de ingestão não chama o
+  provider. Ver D-012: consulta externa e ingestão histórica são operações
+  separadas.
+- `GET /api/products/search` continua sem gravar nada.
+- Leitura histórica: `GET /api/labs/products/:productId/history`
+  (`observedAt ASC`) e tela LAB `/labs/product-history`.
+- Dashboard e `/products` continuam com mocks. Ver `DATABASE.md`.
+
 As demais integrações (AIProvider, StorageProvider, VideoProvider,
 TranscriptionProvider) continuam não implementadas.
 

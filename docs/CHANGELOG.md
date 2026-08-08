@@ -74,3 +74,24 @@ Alterado:
 - `README.md`.
 
 Removido: nada.
+
+## Etapa 02B.1 — Persistência de produtos e snapshots históricos
+
+- **Banco**: PostgreSQL + driver `pg`, sem ORM (D-011). Migrations SQL em
+  `db/migrations/` com runner `npm run migrate`.
+- **Entidades**: `products` (identidade, `UNIQUE (source, source_product_id)`)
+  e `product_snapshots` (observações, índice `(product_id, observed_at)`).
+- **Adapters**: `PostgresProductStore` (produção) e `MemoryProductStore`
+  (dev sem `DATABASE_URL` e testes).
+- **Ingestão**: `ProductIngestionService` persiste produtos já normalizados;
+  não conhece o provider. Upsert preserva valores válidos contra `null`.
+- **Deduplicação**: janela de 5 min + comparação de campos monitorados (D-013).
+- **Rotas LAB**: `POST /api/labs/products/ingest`,
+  `GET /api/labs/products`, `GET /api/labs/products/:productId/history`.
+- **Tela LAB**: `/labs/product-history` com resumo de ingestão e tabela de
+  snapshots (inclui Δ vendas).
+- **Métrica derivada**: apenas `soldCountDelta` (delta bruto).
+- **Testes**: Vitest (`npm test`), 8 casos cobrindo upsert, null, unicidade,
+  ordem cronológica, delta e deduplicação. Provider externo mockado.
+- **Não alterado**: Dashboard, `/products`, mocks, provider Apify,
+  `GET /api/products/search`.
