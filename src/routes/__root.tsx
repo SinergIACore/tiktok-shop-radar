@@ -135,9 +135,6 @@ function RootComponent() {
               <span className="font-display text-sm font-medium text-muted-foreground">
                 {appConfig.name}
               </span>
-              <span className="ml-auto rounded-full border border-border px-2.5 py-1 text-[11px] uppercase tracking-wide text-muted-foreground">
-                dados mockados
-              </span>
             </header>
             <main className="grid-surface flex-1">
               {/* Required: nested routes render here. */}
