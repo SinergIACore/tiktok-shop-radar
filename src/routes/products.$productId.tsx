@@ -230,6 +230,51 @@ function ProductDetail({ data }: { data: Awaited<ReturnType<typeof realProductSe
   );
 }
 
+/** "Descoberto por": pesquisas que trouxeram este produto. Somente leitura. */
+function DiscoveryOrigin({ productId }: { productId: string }) {
+  const query = useQuery({
+    queryKey: ["product-discoveries", productId],
+    queryFn: () => discoveryService.listProductDiscoveries(productId),
+    retry: false,
+  });
+
+  const discoveries = query.data ?? [];
+  if (query.isLoading || query.isError || discoveries.length === 0) return null;
+
+  return (
+    <section className="space-y-4">
+      <h2 className="font-display text-xl font-semibold">Descoberto por</h2>
+      <div className="overflow-x-auto rounded-xl border border-border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Termo</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Pesquisa</TableHead>
+              <TableHead>Descoberto em</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {discoveries.map((entry) => (
+              <TableRow key={entry.id}>
+                <TableCell className="font-medium">{entry.term}</TableCell>
+                <TableCell className="text-muted-foreground">{entry.searchType}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {orDash(entry.searchName ?? entry.searchId)}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {formatDateTime(entry.discoveredAt)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </section>
+  );
+}
+
+
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
     <div className="stat-tile p-4">
