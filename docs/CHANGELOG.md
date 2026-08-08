@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## Hotfix 02B.1B — Erro SSR `__exportAll is not a function`
+
+Corrigido:
+
+- `src/routes/api/labs/products/$productId.history.ts`: `snapshot-rules`
+  (módulo puro, sem driver) passou a ser importado estaticamente; o `import()`
+  dinâmico fazia o bundler SSR construir um objeto de namespace com o helper
+  `__exportAll`, que quebrava no carregamento do chunk `_ssr/router-*.mjs`
+  em produção (HTTP 500 em todas as rotas `/api/labs/*`).
+- `src/routes/api/labs/products/ingest.ts`: `Promise.all` sobre `import()`
+  dinâmicos substituído por `await` sequencial pelo mesmo motivo.
+- Apenas `@/server/persistence/index.server` continua dinâmico — é o único
+  caminho que pode carregar `pg`, mantendo o driver fora do bundle client.
+
+Validado: `npm run build` OK, `npm test` 8/8, servidor Node local
+`GET /api/labs/products` → `200 {"store":"memory","items":[]}`.
+
+
+
 ## Etapa 02A.3 — Ajuste do provider Apify real
 
 Alterado:
