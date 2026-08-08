@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## Etapa 02A.2 — Preparação para deploy Node 22 + Docker + EasyPanel
+
+Adicionado:
+
+- `docker/Dockerfile` (multi-stage, Node 22 alpine, runner com `NODE_ENV=production`,
+  porta 3000, start `node .output/server/index.mjs`).
+- `.dockerignore`.
+- `engines.node: ">=22 <23"` e script `start` em `package.json`.
+- `nitro: { preset: "node-server" }` em `vite.config.ts` (aplicado apenas fora do
+  ambiente Lovable; o preview da plataforma segue inalterado).
+
+Alterado: nenhuma funcionalidade, rota de negócio, provider, mock ou UI.
+
+Removido: nada.
+
 ## Etapa 02A — Prova de aquisição de dados reais do TikTok Shop
 
 Adicionado:
