@@ -85,3 +85,52 @@ Nenhum percentual, velocidade, aceleração ou Viral Score foi implementado.
 O Dashboard e `/products` continuam usando os tipos de `src/types/`
 (`Product`, `Creative`) alimentados por mocks. A camada persistente descrita
 acima ainda **não** alimenta a interface principal.
+
+## Leitura (Etapa 02B.2)
+
+`src/server/read/` contém a camada de leitura, separada da ingestão:
+
+| Arquivo                        | Papel                                              |
+| ------------------------------ | -------------------------------------------------- |
+| `types.ts`                     | contrato `ProductReadRepository` (somente leitura)  |
+| `postgres-read-repository.ts`  | SELECT com window function (sem N+1)                |
+| `memory-read-repository.ts`    | equivalente sobre o store em memória (dev/testes)   |
+| `index.server.ts`              | escolha do adapter por `DATABASE_URL`               |
+
+Query principal (uma única ida ao banco):
+
+```sql
+WITH ranked AS (
+  SELECT s.*, row_number() OVER (PARTITION BY s.product_id
+                                 ORDER BY s.observed_at DESC, s.id DESC) AS rn,
+         count(*) OVER (PARTITION BY s.product_id) AS snapshot_count
+    FROM product_snapshots s
+)
+SELECT ... FROM products p
+  LEFT JOIN ranked l ON l.product_id = p.id AND l.rn = 1
+  LEFT JOIN ranked v ON v.product_id = p.id AND v.rn = 2
+ ORDER BY p.last_seen_at DESC LIMIT $1;
+```
+
+O índice `(product_id, observed_at)` da migration 0001 já atende essa consulta;
+**nenhuma migration nova foi criada** na Etapa 02B.2.
+
+## Métricas históricas (Etapa 02B.2)
+
+Calculadas em `src/server/metrics/product-metrics.ts` (módulo puro) entre os
+dois snapshots mais recentes:
+
+| Métrica                 | Fórmula                                        |
+| ----------------------- | ---------------------------------------------- |
+| `soldCountDelta`        | último − anterior (`sold_count`)               |
+| `gmvDelta`              | último − anterior (`gmv_contribution`)         |
+| `priceDelta`            | último − anterior (`price`)                    |
+| `reviewCountDelta`      | último − anterior (`review_count`)             |
+| `sellerVideoCountDelta` | último − anterior (`seller_video_count`)       |
+| `timeDeltaHours`        | diferença de `observed_at` em horas            |
+| `salesVelocity`         | `soldCountDelta / timeDeltaHours`              |
+
+Regras de null: `NULL` nunca vira `0`; se um dos dois valores for `NULL` a
+métrica derivada é `NULL`; `timeDeltaHours <= 0` ⇒ `salesVelocity = NULL`;
+produto com um único snapshot ⇒ todas as métricas `NULL`. Nenhum percentual,
+tendência, aceleração, saturação ou Viral Score é calculado nesta etapa.

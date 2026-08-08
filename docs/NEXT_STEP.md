@@ -14,12 +14,18 @@ Pendências imediatas:
 - Rodar `npm run migrate` no ambiente de produção.
 - Validar a ingestão com o provider real (Apify) fora do sandbox.
 
-## Etapa 02B.2 sugerida (NÃO implementada)
+## Etapa 02B.2 — concluída
 
-Repositório de leitura sobre os dados persistidos (`PostgresProductRepository`
-implementando `ProductRepository`) e decisão de quando/como substituir os mocks
-do Dashboard e de `/products`. Somente depois disso faz sentido discutir
-coleta agendada e métricas derivadas (velocidade, aceleração, Viral Score).
+Camada de leitura (`src/server/read/`), métricas históricas puras
+(`src/server/metrics/product-metrics.ts`), endpoint
+`GET /api/labs/products/metrics` e LAB `/labs/product-metrics`.
+Sem migration nova. Dashboard, `/products` e mocks intocados.
+
+## Etapa 02B.3 sugerida (NÃO implementada)
+
+Decidir quando/como substituir os mocks do Dashboard e de `/products` pelos
+dados reais já legíveis, e só então discutir coleta agendada, percentuais,
+aceleração e Viral Score.
 
 ## Pendências herdadas
 
