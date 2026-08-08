@@ -46,3 +46,14 @@ continuam mockados e sinalizados como demonstração.
 
 Próxima etapa sugerida (não iniciada): camada de inteligência — Viral Score,
 Opportunity Score, tendências 24h/7d/30d, aceleração e coleta automática.
+
+## Etapa 02C.1 — concluída
+
+Motor de tendência histórica puro em `src/server/intelligence/`, endpoints LAB
+(`/api/labs/products/trends`, `/api/labs/products/:id/trend`) e tela
+`/labs/product-trends`. Dashboard, `/products` e a ingestão não foram alterados.
+
+Próximo passo sugerido (aguardando autorização): validar a engine com dados
+reais em produção e só então decidir como expor tendência em `/products` e no
+Dashboard. Viral Score, ranking de descoberta e coleta automática continuam
+fora de escopo.
