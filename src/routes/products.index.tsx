@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { LayoutGrid, Rows3 } from "lucide-react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { AlertTriangle, Database, ExternalLink } from "lucide-react";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { ProductCard } from "@/components/intelligence/product-card";
 import {
-  ProductFilters,
-  type ProductFiltersValue,
-} from "@/components/intelligence/product-filters";
+  RealProductFilters,
+  defaultRealFilters,
+  type RealProductFiltersValue,
+} from "@/components/intelligence/real-product-filters";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -19,8 +20,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { categoryLabels, formatCompact, formatDate, formatPercent } from "@/lib/format";
-import { productService } from "@/services/product.service";
+import {
+  DASH,
+  deltaTone,
+  formatDateTime,
+  formatDelta,
+  formatMoney,
+  formatNumber,
+  orDash,
+} from "@/lib/real-format";
+import { realProductService } from "@/services/real-product.service";
 
 export const Route = createFileRoute("/products/")({
   head: () => ({
@@ -29,130 +38,217 @@ export const Route = createFileRoute("/products/")({
       {
         name: "description",
         content:
-          "Listagem completa dos produtos monitorados com Viral Score, crescimento, engajamento e saturação.",
+          "Produtos reais persistidos do TikTok Shop com preço, vendas, GMV, reviews e variações entre snapshots.",
       },
       { property: "og:title", content: "Produtos monitorados — TikRadar AI" },
       {
         property: "og:description",
-        content: "Viral Score, crescimento, engajamento e saturação por produto.",
+        content: "Preço, vendas, GMV, reviews e deltas históricos por produto persistido.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProductsPage,
 });
 
 function ProductsPage() {
-  const [filters, setFilters] = useState<ProductFiltersValue>({
-    range: "7d",
-    category: "all",
-    sortBy: "viralScore",
-  });
-  const [view, setView] = useState<"grid" | "table">("grid");
+  const [filters, setFilters] = useState<RealProductFiltersValue>(defaultRealFilters);
+  const [page, setPage] = useState(1);
 
-  const { data: products, isLoading } = useQuery({
-    queryKey: ["products", "all", filters],
-    queryFn: () =>
-      productService.list({
-        range: filters.range,
-        category: filters.category,
-        sortBy: filters.sortBy,
-      }),
+  const query = useQuery({
+    queryKey: ["real-products", filters, page],
+    queryFn: () => realProductService.list({ ...filters, page }),
+    placeholderData: keepPreviousData,
+    retry: false,
   });
+
+  const items = query.data?.items ?? [];
+  const categories = useMemo(
+    () => [...new Set(items.map((item) => item.category).filter((c): c is string => !!c))].sort(),
+    [items],
+  );
+
+  const applyFilters = (next: RealProductFiltersValue) => {
+    setFilters(next);
+    setPage(1);
+  };
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1600px] space-y-6 px-4 py-8 sm:px-6 lg:px-8">
       <PageHeader
         title="Produtos"
-        description="Todos os produtos atualmente sob monitoramento."
+        description="Produtos reais persistidos, com o snapshot mais recente e as variações históricas."
         actions={
-          <div className="flex rounded-lg border border-border bg-card p-1">
-            <Button
-              size="sm"
-              variant={view === "grid" ? "secondary" : "ghost"}
-              className="h-8 px-3"
-              onClick={() => setView("grid")}
-            >
-              <LayoutGrid className="size-4" />
-              <span className="ml-1 text-xs">Grade</span>
-            </Button>
-            <Button
-              size="sm"
-              variant={view === "table" ? "secondary" : "ghost"}
-              className="h-8 px-3"
-              onClick={() => setView("table")}
-            >
-              <Rows3 className="size-4" />
-              <span className="ml-1 text-xs">Tabela</span>
-            </Button>
-          </div>
+          query.data ? (
+            <Badge variant={query.data.store === "postgres" ? "secondary" : "outline"}>
+              <Database className="mr-1 size-3" />
+              {query.data.store === "postgres"
+                ? "PostgreSQL"
+                : "Memória (ambiente sem persistência)"}
+            </Badge>
+          ) : null
         }
       />
 
-      <ProductFilters value={filters} onChange={setFilters} />
+      {query.data?.store === "memory" ? (
+        <p className="rounded-lg border border-dashed border-border px-4 py-3 text-xs text-muted-foreground">
+          Ambiente sem DATABASE_URL: os dados vêm do repositório em memória e são voláteis.
+        </p>
+      ) : null}
 
-      {isLoading ? (
-        <Skeleton className="h-96 rounded-xl" />
-      ) : view === "grid" ? (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {products?.map((product) => <ProductCard key={product.id} product={product} />)}
+      <RealProductFilters value={filters} onChange={applyFilters} categories={categories} />
+
+      {query.isLoading ? (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">Carregando produtos...</p>
+          <Skeleton className="h-96 rounded-xl" />
         </div>
+      ) : query.isError ? (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-10 text-center">
+          <AlertTriangle className="size-6 text-destructive" />
+          <p className="text-sm font-medium">Não foi possível carregar os produtos.</p>
+          <p className="text-xs text-muted-foreground">
+            {(query.error as Error)?.message ?? "Erro de banco de dados."}
+          </p>
+          <Button size="sm" variant="secondary" onClick={() => query.refetch()}>
+            Tentar novamente
+          </Button>
+        </div>
+      ) : items.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+          Nenhum produto persistido encontrado.
+        </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Produto</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead className="text-right">Viral Score</TableHead>
-                <TableHead className="text-right">Crescimento</TableHead>
-                <TableHead className="text-right">Engajamento</TableHead>
-                <TableHead className="text-right">Vídeos</TableHead>
-                <TableHead className="text-right">Criadores</TableHead>
-                <TableHead className="text-right">Saturação</TableHead>
-                <TableHead className="text-right">Atualizado</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {products?.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>
-                    <Link
-                      to="/products/$productId"
-                      params={{ productId: product.id }}
-                      className="font-medium hover:text-primary"
-                    >
-                      {product.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {categoryLabels[product.category]}
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums text-viral">
-                    {product.viralScore}
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums text-growth">
-                    {formatPercent(product.growthRate, true)}
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {formatPercent(product.engagementRate)}
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {formatCompact(product.videoCount)}
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {formatCompact(product.creatorCount)}
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {product.saturation}%
-                  </TableCell>
-                  <TableCell className="text-right text-muted-foreground">
-                    {formatDate(product.lastUpdatedAt)}
-                  </TableCell>
+        <>
+          <div className="overflow-x-auto rounded-xl border border-border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[320px]">Produto</TableHead>
+                  <TableHead>Seller</TableHead>
+                  <TableHead className="text-right">Preço</TableHead>
+                  <TableHead className="text-right">Vendas</TableHead>
+                  <TableHead className="text-right">Δ vendas</TableHead>
+                  <TableHead className="text-right">Vendas/h</TableHead>
+                  <TableHead className="text-right">GMV</TableHead>
+                  <TableHead className="text-right">Δ GMV</TableHead>
+                  <TableHead className="text-right">Rating</TableHead>
+                  <TableHead className="text-right">Reviews</TableHead>
+                  <TableHead className="text-right">Shop videos</TableHead>
+                  <TableHead className="text-right">Última obs.</TableHead>
+                  <TableHead />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {items.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      <Link
+                        to="/products/$productId"
+                        params={{ productId: product.id }}
+                        className="flex items-center gap-3"
+                      >
+                        {product.thumbnail ? (
+                          <img
+                            src={product.thumbnail}
+                            alt={product.name ?? "Produto"}
+                            loading="lazy"
+                            width={44}
+                            height={44}
+                            className="size-11 shrink-0 rounded-md object-cover"
+                          />
+                        ) : (
+                          <div className="size-11 shrink-0 rounded-md bg-secondary" />
+                        )}
+                        <span className="line-clamp-2 text-sm font-medium hover:text-primary">
+                          {orDash(product.name)}
+                        </span>
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {orDash(product.sellerName)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono tabular-nums">
+                      {formatMoney(product.latest?.price ?? null, product.currency)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono tabular-nums">
+                      {formatNumber(product.latest?.soldCount ?? null)}
+                    </TableCell>
+                    <TableCell
+                      className={`text-right font-mono tabular-nums ${deltaTone(product.metrics.soldCountDelta)}`}
+                    >
+                      {formatDelta(product.metrics.soldCountDelta)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono tabular-nums">
+                      {formatNumber(product.metrics.salesVelocity, 2)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono tabular-nums">
+                      {formatMoney(product.latest?.gmvContribution ?? null, product.currency)}
+                    </TableCell>
+                    <TableCell
+                      className={`text-right font-mono tabular-nums ${deltaTone(product.metrics.gmvDelta)}`}
+                    >
+                      {formatDelta(product.metrics.gmvDelta, 2)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono tabular-nums">
+                      {formatNumber(product.latest?.rating ?? null, 1)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono tabular-nums">
+                      {formatNumber(product.latest?.reviewCount ?? null)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono tabular-nums">
+                      {formatNumber(product.latest?.sellerVideoCount ?? null)}
+                    </TableCell>
+                    <TableCell className="text-right text-xs text-muted-foreground">
+                      {formatDateTime(product.latest?.observedAt ?? null)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {product.productUrl ? (
+                        <a
+                          href={product.productUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="text-muted-foreground hover:text-primary"
+                          aria-label="Abrir produto na origem"
+                        >
+                          <ExternalLink className="size-4" />
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">{DASH}</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              {query.data?.total ?? 0} produtos · página {query.data?.page ?? 1} de{" "}
+              {query.data?.totalPages ?? 1}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={(query.data?.page ?? 1) <= 1}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+              >
+                Anterior
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={(query.data?.page ?? 1) >= (query.data?.totalPages ?? 1)}
+                onClick={() => setPage((current) => current + 1)}
+              >
+                Próxima
+              </Button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
