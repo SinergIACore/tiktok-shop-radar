@@ -1,14 +1,16 @@
 # NEXT_STEP
 
-## Pendência imediata da Etapa 02A
+## Estado após a Etapa 02A.3
 
-Definir o Actor Apify (`APIFY_PRODUCT_ACTOR_ID`) e o token na VPS/container,
-validar o schema real retornado e ajustar o normalizer se necessário.
+Actor definido e validado (`lurkapi~tiktok-shop-scraper`), schema real mapeado
+e timeout em 120s. Falta apenas configurar `APIFY_API_TOKEN` e
+`APIFY_PRODUCT_ACTOR_ID` no ambiente de execução (VPS/EasyPanel).
 
 ## Etapa 02B sugerida (não implementada)
 
 Persistir/normalizar os produtos reais e decidir quando substituir os mocks
 do Dashboard e de `/products`.
+
 
 ---
 

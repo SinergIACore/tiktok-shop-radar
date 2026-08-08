@@ -37,6 +37,13 @@ escalares simples, cacheável e fácil de testar via navegador/curl.
       "rating": 4.8,
       "reviewCount": 320,
       "sellerName": "...",
+      "sellerVideoCount": 42,
+      "gmvContribution": 1234.5,
+      "brand": null,
+      "businessName": null,
+      "countryCode": "US",
+      "discountPercent": 30,
+      "commentRate": null,
       "creatorCount": null,
       "source": "apify",
       "sourceProductId": "..."
@@ -46,6 +53,9 @@ escalares simples, cacheável e fácil de testar via navegador/curl.
 ```
 
 Campos não retornados pelo provider vêm como `null`.
+`creatorCount` é sempre `null` nesta etapa (não há campo real equivalente;
+`sellerVideoCount` não é usado como substituto).
+Timeout máximo do provider: 120s (`APIFY_TIMEOUT_MS`).
 
 ### Erros
 

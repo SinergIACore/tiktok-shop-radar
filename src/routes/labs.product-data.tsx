@@ -152,7 +152,8 @@ function ProductDataLab() {
                     <th className="px-3 py-2">Avaliação</th>
                     <th className="px-3 py-2">Reviews</th>
                     <th className="px-3 py-2">Seller</th>
-                    <th className="px-3 py-2">Criadores</th>
+                    <th className="px-3 py-2">Shop Videos</th>
+                    <th className="px-3 py-2">GMV</th>
                     <th className="px-3 py-2">URL</th>
                     <th className="px-3 py-2">Source</th>
                   </tr>
@@ -178,7 +179,8 @@ function ProductDataLab() {
                       <td className="px-3 py-2">{item.rating ?? "—"}</td>
                       <td className="px-3 py-2">{item.reviewCount ?? "—"}</td>
                       <td className="px-3 py-2">{item.sellerName ?? "—"}</td>
-                      <td className="px-3 py-2">{item.creatorCount ?? "—"}</td>
+                      <td className="px-3 py-2">{item.sellerVideoCount ?? "—"}</td>
+                      <td className="px-3 py-2">{item.gmvContribution ?? "—"}</td>
                       <td className="px-3 py-2">
                         {item.productUrl ? (
                           <a

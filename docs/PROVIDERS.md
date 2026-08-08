@@ -32,12 +32,39 @@ Resposta: array JSON com os itens do dataset do Actor.
 Documentação: https://docs.apify.com/api/v2
 
 **Actor:** NÃO é fixado em código. É lido de `APIFY_PRODUCT_ACTOR_ID`
-(formato `username~actor-name`). Isso evita acoplamento a um Actor específico
-do marketplace.
+(formato `username~actor-name`). Actor validado em uso:
+`lurkapi~tiktok-shop-scraper`.
 
 **Input enviado:** shape conservador e comum entre Actors de TikTok Shop
 (`keyword`, `keywords`, `searchQueries`, `maxItems`, `country`). Actors ignoram
 chaves desconhecidas.
+
+**Mapeamento do schema real (Etapa 02A.3):**
+
+| Campo do Actor      | Campo normalizado  |
+| ------------------- | ------------------ |
+| `id` / `productId`  | `id`               |
+| `title`             | `name`             |
+| `mainImage`         | `thumbnail`        |
+| `imageUrls[0]`      | `thumbnail` (fallback) |
+| `productUrl`        | `productUrl`       |
+| `categoryPath`      | `category`         |
+| `currentPrice`      | `price`            |
+| `currency`          | `currency`         |
+| `soldCount`         | `soldCount`        |
+| `rating`            | `rating`           |
+| `reviewCount`       | `reviewCount`      |
+| `sellerName`        | `sellerName`       |
+| `sellerVideoCount`  | `sellerVideoCount` |
+| `gmvContribution`   | `gmvContribution`  |
+| `brand`             | `brand`            |
+| `businessName`      | `businessName`     |
+| `countryCode`       | `countryCode`      |
+| `discountPercent`   | `discountPercent`  |
+| `commentRate`       | `commentRate`      |
+
+`creatorCount` permanece `null`: o Actor não expõe contagem real de criadores
+e `sellerVideoCount` NÃO é usado como substituto.
 
 **Risco de schema:** cada Actor do marketplace tem output próprio e pode mudar
 sem aviso. Por isso a normalização (`normalizers/normalizeProduct.ts`) é
@@ -54,7 +81,7 @@ custo exatos) precisa ser escolhido pelo responsável do projeto. Enquanto
 - Custo depende do Actor escolhido (modelo pay-per-event ou por compute unit)
   somado ao plano Apify. Não há custo enquanto não houver token/Actor.
 - `run-sync-get-dataset-items` é síncrono; Actors lentos podem estourar o
-  timeout (`APIFY_TIMEOUT_MS`, padrão 60s).
+  timeout (`APIFY_TIMEOUT_MS`, padrão 120000 ms).
 - Limite de itens desta etapa: 1 a 50.
 
 ## Lock-in
@@ -70,4 +97,4 @@ não muda.
 | ------------------------ | ----------- | ---------------------------------- |
 | `APIFY_API_TOKEN`        | sim         | Token da conta Apify               |
 | `APIFY_PRODUCT_ACTOR_ID` | sim         | Actor, ex. `username~actor-name`   |
-| `APIFY_TIMEOUT_MS`       | não         | Timeout da chamada (padrão 60000)  |
+| `APIFY_TIMEOUT_MS`       | não         | Timeout da chamada (padrão 120000) |
