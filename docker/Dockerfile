@@ -22,10 +22,20 @@ ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=3000
 
-# Somente o output do servidor é necessário em runtime.
+# package.json + dependências de produção (inclui `pg`, usado pelo runner de migrations).
+# Ver D-010: o repositório não versiona package-lock.json, por isso `npm install`.
+COPY package.json ./
+RUN npm install --omit=dev --no-audit --no-fund
+
+# Output do servidor (runtime da aplicação).
 COPY --from=builder /app/.output ./.output
+
+# Migrations explícitas: `npm run migrate` dentro do container.
+COPY scripts/migrate.mjs ./scripts/migrate.mjs
+COPY db/migrations ./db/migrations
 
 USER node
 EXPOSE 3000
 
+# Migration NUNCA roda no startup — é operação manual e explícita.
 CMD ["node", ".output/server/index.mjs"]
