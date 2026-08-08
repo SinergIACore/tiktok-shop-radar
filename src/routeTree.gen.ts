@@ -14,6 +14,7 @@ import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as CreativesRouteImport } from './routes/creatives'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ApiDashboardRouteImport } from './routes/api/dashboard'
 import { Route as LabsProductDataRouteImport } from './routes/labs.product-data'
 import { Route as LabsProductHistoryRouteImport } from './routes/labs.product-history'
 import { Route as LabsProductMetricsRouteImport } from './routes/labs.product-metrics'
@@ -50,6 +51,11 @@ const LibraryRoute = LibraryRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDashboardRoute = ApiDashboardRouteImport.update({
+  id: '/api/dashboard',
+  path: '/api/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LabsProductDataRoute = LabsProductDataRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/creatives': typeof CreativesRoute
   '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
+  '/api/dashboard': typeof ApiDashboardRoute
   '/labs/product-data': typeof LabsProductDataRoute
   '/labs/product-history': typeof LabsProductHistoryRoute
   '/labs/product-metrics': typeof LabsProductMetricsRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/creatives': typeof CreativesRoute
   '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
+  '/api/dashboard': typeof ApiDashboardRoute
   '/labs/product-data': typeof LabsProductDataRoute
   '/labs/product-history': typeof LabsProductHistoryRoute
   '/labs/product-metrics': typeof LabsProductMetricsRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/creatives': typeof CreativesRoute
   '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
+  '/api/dashboard': typeof ApiDashboardRoute
   '/labs/product-data': typeof LabsProductDataRoute
   '/labs/product-history': typeof LabsProductHistoryRoute
   '/labs/product-metrics': typeof LabsProductMetricsRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/creatives'
     | '/library'
     | '/settings'
+    | '/api/dashboard'
     | '/labs/product-data'
     | '/labs/product-history'
     | '/labs/product-metrics'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/creatives'
     | '/library'
     | '/settings'
+    | '/api/dashboard'
     | '/labs/product-data'
     | '/labs/product-history'
     | '/labs/product-metrics'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/creatives'
     | '/library'
     | '/settings'
+    | '/api/dashboard'
     | '/labs/product-data'
     | '/labs/product-history'
     | '/labs/product-metrics'
@@ -238,6 +250,7 @@ export interface RootRouteChildren {
   CreativesRoute: typeof CreativesRoute
   LibraryRoute: typeof LibraryRoute
   SettingsRoute: typeof SettingsRoute
+  ApiDashboardRoute: typeof ApiDashboardRoute
   LabsProductDataRoute: typeof LabsProductDataRoute
   LabsProductHistoryRoute: typeof LabsProductHistoryRoute
   LabsProductMetricsRoute: typeof LabsProductMetricsRoute
@@ -287,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/dashboard': {
+      id: '/api/dashboard'
+      path: '/api/dashboard'
+      fullPath: '/api/dashboard'
+      preLoaderRoute: typeof ApiDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/labs/product-data': {
@@ -382,6 +402,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreativesRoute: CreativesRoute,
   LibraryRoute: LibraryRoute,
   SettingsRoute: SettingsRoute,
+  ApiDashboardRoute: ApiDashboardRoute,
   LabsProductDataRoute: LabsProductDataRoute,
   LabsProductHistoryRoute: LabsProductHistoryRoute,
   LabsProductMetricsRoute: LabsProductMetricsRoute,
@@ -398,13 +419,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
