@@ -183,6 +183,15 @@ export class PostgresProductReadRepository implements ProductReadRepository {
     return rows.map(toProductWithMetrics);
   }
 
+  async listProductsByIds(productIds: string[]): Promise<ProductWithMetrics[]> {
+    if (productIds.length === 0) return [];
+    const pool = await getPool();
+    const { rows } = await pool.query(METRICS_QUERY("WHERE p.id::text = ANY($1)", ""), [
+      productIds,
+    ]);
+    return rows.map(toProductWithMetrics);
+  }
+
   async listProductsPage(query: ProductListQuery): Promise<ProductListPage> {
     const pool = await getPool();
     const { where, values } = buildFilters(query);
