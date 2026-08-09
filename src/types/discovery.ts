@@ -17,6 +17,8 @@ export interface DiscoverySearch {
   type: SearchType;
   query: string | null;
   nicheKey: string | null;
+  /** TikTok Shop market/country code sent to the provider (e.g. "US"). */
+  market: string;
   terms: string[];
   active: boolean;
   createdAt: string;
@@ -30,6 +32,7 @@ export interface DiscoverySearchInput {
   type: SearchType;
   query?: string | null;
   nicheKey?: string | null;
+  market?: string;
   terms?: string[];
   active?: boolean;
 }
@@ -38,9 +41,11 @@ export interface DiscoverySearchPatch {
   name?: string;
   query?: string | null;
   nicheKey?: string | null;
+  market?: string;
   terms?: string[];
   active?: boolean;
 }
+
 
 export interface ProductDiscovery {
   id: string;
