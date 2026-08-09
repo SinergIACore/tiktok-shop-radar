@@ -49,7 +49,28 @@ function cleanTerms(raw: unknown): string[] {
 }
 
 export function parseLimits(raw: unknown): DiscoveryRunLimits {
+/**
+ * Validates the market/country against the REAL Actor `country` enum.
+ * Unsupported values are rejected — no silent fallback to another market.
+ */
+export function parseMarket(raw: unknown, fallback: string = DEFAULT_MARKET): string {
+  if (raw === undefined || raw === null || raw === "") return fallback;
+  if (typeof raw !== "string") {
+    throw new DiscoveryError("validation_error", "Mercado inválido.");
+  }
+  const market = findMarket(raw);
+  if (!market) {
+    throw new DiscoveryError(
+      "validation_error",
+      `Mercado não suportado pelo provider: ${raw.trim()}.`,
+    );
+  }
+  return market.code;
+}
+
+export function parseLimits(raw: unknown): DiscoveryRunLimits {
   const input = (raw ?? {}) as { maxTermsPerRun?: unknown; maxProductsPerTerm?: unknown };
+
   const clamp = (value: unknown, fallback: number, max: number) => {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return fallback;
