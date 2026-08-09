@@ -37,6 +37,7 @@ export interface DiscoveryRepository {
   quickSearch(input: {
     query: string;
     type: "keyword" | "product_name";
+    market?: string;
     maxProductsPerTerm?: number;
   }): Promise<DiscoveryRunResponse>;
   listNiches(): Promise<NicheCatalogResponse>;

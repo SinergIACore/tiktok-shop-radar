@@ -40,6 +40,7 @@ export class DiscoveryService {
   quickSearch(input: {
     query: string;
     type: "keyword" | "product_name";
+    market?: string;
     maxProductsPerTerm?: number;
   }): Promise<DiscoveryRunResponse> {
     return this.repository.quickSearch(input);
