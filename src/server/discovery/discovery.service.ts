@@ -5,8 +5,16 @@ import type { ProductStore } from "../persistence/types";
 import { ProductIngestionService } from "../ingestion/product-ingestion.service";
 import type { ProductDataProvider } from "@/services/providers/product-data/ProductDataProvider";
 import { ProviderError } from "@/services/providers/product-data/types/external-product.types";
+import { DEFAULT_MARKET } from "@/config/markets";
+import {
+  DEFAULT_QUALITY_RULE,
+  splitByQuality,
+  type DiscoveryQualityRule,
+} from "./quality-filter";
+import type { ProductSearchSort } from "@/services/providers/product-data/types/external-product.types";
 import type {
   DiscoveryProductResult,
+  DiscoveryRunDiagnostics,
   DiscoveryRunLimits,
   DiscoveryRunSummary,
   DiscoverySearch,
@@ -22,12 +30,22 @@ export interface DiscoveryRunTarget {
   terms: string[];
 }
 
+export interface DiscoveryRunOptions {
+  /** Market/country sent to the provider (already validated). */
+  market?: string;
+  /** Source-side sort. Defaults to best_sellers for commercial relevance. */
+  sort?: ProductSearchSort;
+  /** Commercial filter applied BEFORE persistence. */
+  quality?: DiscoveryQualityRule;
+}
+
 export interface DiscoveryRunResult {
   run: DiscoveryRunSummary;
   limits: DiscoveryRunLimits;
   terms: DiscoveryTermResult[];
   errors: { term: string; status: "failed"; message: string }[];
   productIds: string[];
+  diagnostics: DiscoveryRunDiagnostics;
 }
 
 /** Provider messages are normalized so no vendor/token detail leaks out. */
@@ -66,7 +84,14 @@ export class DiscoveryService {
     this.ingestion = new ProductIngestionService(productStore);
   }
 
-  async run(target: DiscoveryRunTarget, limits: DiscoveryRunLimits): Promise<DiscoveryRunResult> {
+  async run(
+    target: DiscoveryRunTarget,
+    limits: DiscoveryRunLimits,
+    options: DiscoveryRunOptions = {},
+  ): Promise<DiscoveryRunResult> {
+    const market = options.market ?? target.search?.market ?? DEFAULT_MARKET;
+    const sort: ProductSearchSort = options.sort ?? "best_sellers";
+    const quality = options.quality ?? DEFAULT_QUALITY_RULE;
     const maxTerms = Math.min(limits.maxTermsPerRun, HARD_LIMITS.maxTermsPerRun);
     const maxProducts = Math.min(limits.maxProductsPerTerm, HARD_LIMITS.maxProductsPerTerm);
     const effectiveLimits = { maxTermsPerRun: maxTerms, maxProductsPerTerm: maxProducts };
@@ -83,12 +108,15 @@ export class DiscoveryService {
     const termResults: DiscoveryTermResult[] = [];
     const errors: { term: string; status: "failed"; message: string }[] = [];
     const uniqueProducts = new Set<string>();
+    let receivedFromProvider = 0;
 
     const run: DiscoveryRunSummary = {
       startedAt,
       finishedAt: startedAt,
       termsExecuted: 0,
       received: 0,
+      qualified: 0,
+      discarded: 0,
       uniqueProducts: 0,
       productsCreated: 0,
       productsUpdated: 0,
@@ -102,11 +130,28 @@ export class DiscoveryService {
     for (const term of terms) {
       run.termsExecuted += 1;
       try {
-        const result = await this.provider.searchProducts({ keyword: term, limit: maxProducts });
+        const result = await this.provider.searchProducts({
+          keyword: term,
+          // Propagated to the Actor as maxProductsPerSource — no implicit 50.
+          limit: maxProducts,
+          country: market,
+          sort,
+        });
         const items = result.items.slice(0, maxProducts);
-        const summary = await this.ingestion.ingest(items);
+        // Commercial cut BEFORE persistence: discarded candidates never
+        // become a Product/ProductSnapshot, they are only logged.
+        const { qualified, discarded } = splitByQuality(items, quality);
+        if (discarded.length > 0) {
+          console.info(
+            `[discovery] term=${term} market=${market} discarded=${discarded.length} reason=below_commercial_threshold`,
+          );
+        }
+        const summary = await this.ingestion.ingest(qualified);
 
-        run.received += summary.received;
+        receivedFromProvider += result.diagnostics.receivedCount;
+        run.received += items.length;
+        run.qualified += qualified.length;
+        run.discarded += discarded.length;
         run.productsCreated += summary.productsCreated;
         run.productsUpdated += summary.productsUpdated;
         run.snapshotsCreated += summary.snapshotsCreated;
@@ -128,7 +173,12 @@ export class DiscoveryService {
         termResults.push({
           term,
           status: "ok",
-          received: summary.received,
+          received: items.length,
+          qualified: qualified.length,
+          discarded: discarded.length,
+          requestedLimit: result.diagnostics.requestedLimit,
+          providerLimit: result.diagnostics.providerLimit,
+          receivedCount: result.diagnostics.receivedCount,
           productIds: summary.productIds,
         });
       } catch (error) {
@@ -148,6 +198,14 @@ export class DiscoveryService {
       terms: termResults,
       errors,
       productIds: [...uniqueProducts],
+      diagnostics: {
+        market,
+        sort,
+        requestedLimit: maxProducts,
+        providerLimit: maxProducts,
+        receivedCount: receivedFromProvider,
+        quality: { ...quality },
+      },
     };
   }
 }
