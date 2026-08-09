@@ -226,3 +226,46 @@ Removido: nada.
   configurado, validação). Total 73 passando.
 - **Não alterado**: Dashboard, `/products` (listagem), ingestão, deduplicação
   de snapshots, motor de tendência, LABs, Docker e migration 0001.
+
+## Microetapa 02C.2B — Discovery eficiente + país/mercado
+
+- **Limite real do Actor**: o limite pedido na UI agora é enviado
+  explicitamente como `maxProductsPerSource` no input do Actor. Antes o campo
+  não era enviado e o Actor usava o default **50 produtos por keyword** (todos
+  cobrados) enquanto líamos apenas os primeiros N. Diagnóstico exposto na
+  resposta: `requestedLimit`, `providerLimit`, `receivedCount` (por termo e
+  agregado em `diagnostics`).
+- **Mercado/País**: inspecionado o input schema real do Actor
+  `lurkapi~tiktok-shop-scraper` — o único parâmetro de mercado suportado é
+  `country`, cujo enum contém **apenas `US`**. Catálogo em
+  `src/config/markets.ts` espelha esse enum (nada inventado); valores fora do
+  catálogo são rejeitados com erro de validação, sem fallback silencioso.
+  **Limitação documentada**: outros mercados (UK/FR/SEA) constam apenas como
+  roadmap do Actor e por isso não são selecionáveis.
+- **Persistência**: migration `0003_discovery_market.sql` adiciona
+  `discovery_searches.market` (default `'US'`). Uma pesquisa salva passa a
+  lembrar query, tipo, nicho **e mercado**.
+- **Qualidade comercial**: `keywordSortBy = "best_sellers"` enviado ao Actor e
+  filtro local puro em `src/server/discovery/quality-filter.ts` aplicado
+  **antes da persistência**: aceita quando `soldCount >= 100` **ou**
+  `reviewCount >= 20` (configurável). Descartados não viram Product nem
+  Snapshot — apenas log. Contadores `received`, `qualified`, `discarded`.
+- **Add-ons/payload**: `includeCreatorCount = false` (add-on pago),
+  `includeFirstSeen = true` (grátis) e desligamento dos campos `output*` que o
+  normalizador nunca lê.
+- **UI `/discovery`**: seletor de Mercado na busca rápida, no bloco de nichos e
+  na criação de pesquisas salvas; coluna Mercado na tabela; resultado exibe
+  Recebidos, Qualificados, Descartados, Únicos, Criados, Atualizados e
+  Snapshots, além da linha de diagnóstico de custo. Spinner com a mensagem
+  "Consultando mercado e analisando candidatos...".
+- **Não alterado**: sobreamostragem automática (adiada), scores Viral/
+  Opportunity, automações, motor de tendência, Dashboard, `/products`,
+  migrations 0001/0002.
+- **Testes**: 10 novos casos (limites propagados, mercado enviado/validado,
+  ordenação best_sellers, descarte de candidatos fracos, regra customizada,
+  ausência de credenciais no diagnóstico). Total **83 passando**. Build limpo.
+
+> **Nota de nichos**: a execução de nicho continua fazendo 1 chamada por termo.
+> O Actor aceita vários `keywords` num único run, mas isso removeria a
+> atribuição termo→produto exigida por `ProductDiscovery`. Consolidação fica
+> pendente para quando a atribuição por termo puder ser preservada.

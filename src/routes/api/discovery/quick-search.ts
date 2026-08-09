@@ -8,6 +8,7 @@ import { DiscoveryService, buildDiscoveryProducts } from "@/server/discovery/dis
 
 import { DiscoveryError } from "@/server/discovery/store-types";
 import { parseLimits, validateQuickSearch } from "@/server/discovery/validation";
+import { parseQualityRule } from "@/server/discovery/quality-filter";
 
 /**
  * POST /api/discovery/quick-search
@@ -29,7 +30,8 @@ export const Route = createFileRoute("/api/discovery/quick-search")({
         }
 
         try {
-          const { type, query } = validateQuickSearch(body);
+          const { type, query, market } = validateQuickSearch(body);
+          const quality = parseQualityRule((body as { quality?: unknown }).quality);
           const limits = parseLimits({ ...(body as object), maxTermsPerRun: 1 });
 
 
@@ -42,7 +44,11 @@ export const Route = createFileRoute("/api/discovery/quick-search")({
             provider,
           );
 
-          const result = await service.run({ search: null, terms: [query] }, limits);
+          const result = await service.run({ search: null, terms: [query] }, limits, {
+            market,
+            sort: "best_sellers",
+            quality,
+          });
           const repository = await getProductReadRepository();
           const products = await buildDiscoveryProducts(
             repository,
@@ -50,14 +56,15 @@ export const Route = createFileRoute("/api/discovery/quick-search")({
           );
 
           console.info(
-            `[discovery] quick type=${type} received=${result.run.received} unique=${result.run.uniqueProducts} errors=${result.errors.length}`,
+            `[discovery] quick type=${type} market=${market} received=${result.run.received} qualified=${result.run.qualified} discarded=${result.run.discarded} unique=${result.run.uniqueProducts} errors=${result.errors.length}`,
           );
 
           return Response.json({
             search: null,
-            quick: { type, query },
+            quick: { type, query, market },
             run: result.run,
             limits: result.limits,
+            diagnostics: result.diagnostics,
             terms: result.terms,
             errors: result.errors,
             products,

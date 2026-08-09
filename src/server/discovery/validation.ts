@@ -1,3 +1,4 @@
+import { DEFAULT_MARKET, findMarket } from "@/config/markets";
 import { findNiche } from "@/config/niches";
 import type {
   DiscoverySearchInput,
@@ -6,6 +7,7 @@ import type {
   SearchType,
 } from "@/types/discovery";
 import { DiscoveryError } from "./store-types";
+
 
 /**
  * Pure validation + cost guards (Stage 02C.2).
@@ -46,8 +48,29 @@ function cleanTerms(raw: unknown): string[] {
   return terms;
 }
 
+/**
+
+ * Validates the market/country against the REAL Actor `country` enum.
+ * Unsupported values are rejected — no silent fallback to another market.
+ */
+export function parseMarket(raw: unknown, fallback: string = DEFAULT_MARKET): string {
+  if (raw === undefined || raw === null || raw === "") return fallback;
+  if (typeof raw !== "string") {
+    throw new DiscoveryError("validation_error", "Mercado inválido.");
+  }
+  const market = findMarket(raw);
+  if (!market) {
+    throw new DiscoveryError(
+      "validation_error",
+      `Mercado não suportado pelo provider: ${raw.trim()}.`,
+    );
+  }
+  return market.code;
+}
+
 export function parseLimits(raw: unknown): DiscoveryRunLimits {
   const input = (raw ?? {}) as { maxTermsPerRun?: unknown; maxProductsPerTerm?: unknown };
+
   const clamp = (value: unknown, fallback: number, max: number) => {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return fallback;
@@ -109,6 +132,7 @@ export function validateSearchInput(raw: unknown): Required<DiscoverySearchInput
       type,
       query: null,
       nicheKey: nicheKey || null,
+      market: parseMarket(input["market"]),
       terms,
       active: input["active"] === false ? false : true,
     };
@@ -124,6 +148,7 @@ export function validateSearchInput(raw: unknown): Required<DiscoverySearchInput
     type,
     query,
     nicheKey: null,
+    market: parseMarket(input["market"]),
     terms: [query],
     active: input["active"] === false ? false : true,
   };
@@ -169,6 +194,9 @@ export function validateSearchPatch(raw: unknown): DiscoverySearchPatch {
     }
     patch.nicheKey = nicheKey || null;
   }
+  if (input["market"] !== undefined) {
+    patch.market = parseMarket(input["market"]);
+  }
   if (input["active"] !== undefined) {
     if (typeof input["active"] !== "boolean") {
       throw new DiscoveryError("validation_error", "Campo active deve ser booleano.");
@@ -183,7 +211,11 @@ export function validateSearchPatch(raw: unknown): DiscoverySearchPatch {
 }
 
 /** Ad-hoc (unsaved) quick search: keyword or product_name only. */
-export function validateQuickSearch(raw: unknown): { type: SearchType; query: string } {
+export function validateQuickSearch(raw: unknown): {
+  type: SearchType;
+  query: string;
+  market: string;
+} {
   const input = (raw ?? {}) as Record<string, unknown>;
   const type = TYPES.find((value) => value === input["type"]) ?? "keyword";
   if (type === "niche") {
@@ -197,5 +229,5 @@ export function validateQuickSearch(raw: unknown): { type: SearchType; query: st
   if (query.length > MAX_QUERY_LENGTH) {
     throw new DiscoveryError("validation_error", "Query muito longa.");
   }
-  return { type, query };
+  return { type, query, market: parseMarket(input["market"]) };
 }

@@ -189,3 +189,9 @@ continua sendo criado/atualizado exclusivamente pelo `ProductIngestionService`
 apenas registra **por qual pesquisa e termo** ele apareceu.
 
 Índices: `product_id`, `search_id` e `discovered_at DESC`.
+
+## Migration 0003 — `discovery_searches.market`
+
+Coluna `market text NOT NULL DEFAULT 'US'` + índice `idx_discovery_searches_market`.
+Guarda o mercado (país TikTok Shop) escolhido na pesquisa salva. Valores são
+validados na aplicação contra o catálogo real suportado pelo provider.

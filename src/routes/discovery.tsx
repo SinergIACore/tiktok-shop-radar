@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { AlertTriangle, Compass, Hourglass, Loader2, Play, Search } from "lucide-react";
 
+import { SUPPORTED_MARKETS, DEFAULT_MARKET } from "@/config/markets";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,12 +96,14 @@ function DiscoveryPage() {
   const [quickQuery, setQuickQuery] = useState("");
   const [quickType, setQuickType] = useState<"keyword" | "product_name">("keyword");
   const [quickLimit, setQuickLimit] = useState(5);
+  const [quickMarket, setQuickMarket] = useState(DEFAULT_MARKET);
 
   const quickRun = useMutation({
     mutationFn: () =>
       discoveryService.quickSearch({
         query: quickQuery,
         type: quickType,
+        market: quickMarket,
         maxProductsPerTerm: quickLimit,
       }),
     onSuccess: onRunSuccess,
@@ -109,6 +112,7 @@ function DiscoveryPage() {
 
   // Niche run ---------------------------------------------------------------
   const [nicheLimits, setNicheLimits] = useState({ terms: 5, products: 5 });
+  const [nicheMarket, setNicheMarket] = useState(DEFAULT_MARKET);
   const nicheRun = useMutation({
     mutationFn: async (nicheKey: string) => {
       const niche = niches.data?.niches.find((entry) => entry.key === nicheKey);
@@ -117,6 +121,7 @@ function DiscoveryPage() {
         name: niche.name,
         type: "niche",
         nicheKey: niche.key,
+        market: nicheMarket,
         terms: niche.terms,
       });
       return discoveryService.runSearch(search.id, {
@@ -146,14 +151,15 @@ function DiscoveryPage() {
   const [newType, setNewType] = useState<SearchType>("keyword");
   const [newQuery, setNewQuery] = useState("");
   const [newNiche, setNewNiche] = useState("");
+  const [newMarket, setNewMarket] = useState(DEFAULT_MARKET);
   const [createError, setCreateError] = useState<string | null>(null);
 
   const createSearch = useMutation({
     mutationFn: () =>
       discoveryService.createSearch(
         newType === "niche"
-          ? { name: newName, type: "niche", nicheKey: newNiche }
-          : { name: newName, type: newType, query: newQuery },
+          ? { name: newName, type: "niche", nicheKey: newNiche, market: newMarket }
+          : { name: newName, type: newType, query: newQuery, market: newMarket },
       ),
     onSuccess: () => {
       setNewName("");
@@ -178,7 +184,7 @@ function DiscoveryPage() {
       {/* A) Busca rápida */}
       <section className="space-y-4 rounded-xl border border-border bg-card p-5">
         <h2 className="font-display text-lg font-semibold">Busca rápida</h2>
-        <div className="grid gap-4 md:grid-cols-[2fr_1fr_auto_auto] md:items-end">
+        <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr_auto_auto] md:items-end">
           <div className="space-y-1.5">
             <Label htmlFor="quick-query">O que você quer pesquisar?</Label>
             <Input
@@ -200,6 +206,21 @@ function DiscoveryPage() {
               <SelectContent>
                 <SelectItem value="keyword">Palavra-chave</SelectItem>
                 <SelectItem value="product_name">Nome de produto</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Mercado</Label>
+            <Select value={quickMarket} onValueChange={setQuickMarket}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUPPORTED_MARKETS.map((market) => (
+                  <SelectItem key={market.code} value={market.code}>
+                    {market.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -238,7 +259,7 @@ function DiscoveryPage() {
         {running && (
           <p className="flex items-center gap-2 text-xs text-muted-foreground">
             <Hourglass className="size-4 animate-pulse" />
-            Consultando o provider e processando os produtos. Aguarde...
+            Consultando mercado e analisando candidatos...
           </p>
         )}
       </section>
@@ -248,6 +269,21 @@ function DiscoveryPage() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="font-display text-lg font-semibold">Pesquisa por nicho</h2>
           <div className="flex items-end gap-3">
+            <div className="w-44 space-y-1.5">
+              <Label>Mercado</Label>
+              <Select value={nicheMarket} onValueChange={setNicheMarket}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUPPORTED_MARKETS.map((market) => (
+                    <SelectItem key={market.code} value={market.code}>
+                      {market.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="w-32 space-y-1.5">
               <Label htmlFor="niche-terms">Máx. termos</Label>
               <Input
@@ -331,7 +367,7 @@ function DiscoveryPage() {
           <h2 className="font-display text-lg font-semibold">Resultado da execução</h2>
           <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" />
-            Processando resultado da execução...
+            Consultando mercado e analisando candidatos...
           </div>
         </section>
       )}
@@ -342,7 +378,7 @@ function DiscoveryPage() {
       <section className="space-y-4">
         <h2 className="font-display text-lg font-semibold">Pesquisas salvas</h2>
 
-        <div className="grid gap-4 rounded-xl border border-border bg-card p-5 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
+        <div className="grid gap-4 rounded-xl border border-border bg-card p-5 md:grid-cols-[1fr_1fr_1fr_1fr_auto] md:items-end">
           <div className="space-y-1.5">
             <Label htmlFor="new-name">Nome</Label>
             <Input
@@ -392,6 +428,21 @@ function DiscoveryPage() {
               />
             </div>
           )}
+          <div className="space-y-1.5">
+            <Label>Mercado</Label>
+            <Select value={newMarket} onValueChange={setNewMarket}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUPPORTED_MARKETS.map((market) => (
+                  <SelectItem key={market.code} value={market.code}>
+                    {market.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Button
             variant="secondary"
             disabled={createSearch.isPending || newName.trim().length === 0}
@@ -400,7 +451,7 @@ function DiscoveryPage() {
             Nova pesquisa
           </Button>
           {createError && (
-            <p className="text-xs text-destructive md:col-span-4">{createError}</p>
+            <p className="text-xs text-destructive md:col-span-5">{createError}</p>
           )}
         </div>
 
@@ -418,6 +469,7 @@ function DiscoveryPage() {
                   <TableHead>Nome</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Query/Nicho</TableHead>
+                  <TableHead>Mercado</TableHead>
                   <TableHead className="text-right">Termos</TableHead>
                   <TableHead>Ativa</TableHead>
                   <TableHead>Última execução</TableHead>
@@ -433,6 +485,7 @@ function DiscoveryPage() {
                     <TableCell className="text-muted-foreground">
                       {orDash(search.query ?? search.nicheKey)}
                     </TableCell>
+                    <TableCell className="text-muted-foreground">{search.market}</TableCell>
                     <TableCell className="text-right tabular-nums">
                       {search.terms.length}
                     </TableCell>
@@ -483,12 +536,14 @@ function DiscoveryPage() {
 }
 
 function RunResult({ data }: { data: DiscoveryRunResponse }) {
-  const { run, products, errors, limits } = data;
+  const { run, products, errors, limits, diagnostics } = data;
   return (
     <section className="space-y-4">
       <h2 className="font-display text-lg font-semibold">Resultado da execução</h2>
       <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
         <Stat label="Recebidos" value={String(run.received)} />
+        <Stat label="Qualificados" value={String(run.qualified)} />
+        <Stat label="Descartados" value={String(run.discarded)} />
         <Stat label="Produtos únicos" value={String(run.uniqueProducts)} />
         <Stat label="Criados" value={String(run.productsCreated)} />
         <Stat label="Atualizados" value={String(run.productsUpdated)} />
@@ -498,6 +553,14 @@ function RunResult({ data }: { data: DiscoveryRunResponse }) {
       <p className="text-xs text-muted-foreground">
         {run.termsExecuted} termo(s) executado(s) — limite de {limits.maxTermsPerRun} termos e{" "}
         {limits.maxProductsPerTerm} produtos por termo.
+        {diagnostics ? (
+          <>
+            {" "}Mercado {diagnostics.market} · ordenação {diagnostics.sort} · limite enviado ao
+            provider {diagnostics.providerLimit} · recebidos do provider{" "}
+            {diagnostics.receivedCount} · corte comercial soldCount ≥{" "}
+            {diagnostics.quality.minSoldCount} ou reviews ≥ {diagnostics.quality.minReviewCount}.
+          </>
+        ) : null}
       </p>
 
       {errors.length > 0 && (

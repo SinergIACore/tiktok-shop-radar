@@ -6,13 +6,36 @@
 /** Raw item returned by an external provider. Shape is unknown by design. */
 export type ExternalProduct = Record<string, unknown>;
 
+/**
+ * Provider-agnostic sort intent.
+ * "best_sellers" is only honored by providers that support it natively.
+ */
+export type ProductSearchSort = "relevance" | "best_sellers";
+
 export interface ProductSearchParams {
   keyword: string;
-  /** Max number of items to return. */
+  /** Max number of items to return AND to request from the provider. */
   limit?: number;
   /** ISO country / market code, when the provider supports it. */
   country?: string;
+  /** Commercial sort requested at the source. Defaults to "relevance". */
+  sort?: ProductSearchSort;
 }
+
+/** Cost/limit diagnostics of a single provider call. */
+export interface ProductSearchDiagnostics {
+  /** Limit asked by the caller. */
+  requestedLimit: number;
+  /** Limit actually sent to the provider (collection cap at the source). */
+  providerLimit: number;
+  /** Items actually returned by the provider before any local filter. */
+  receivedCount: number;
+  /** Sort actually sent to the provider. */
+  sort: ProductSearchSort;
+  /** Market/country actually sent to the provider, or null when not sent. */
+  market: string | null;
+}
+
 
 /** Internal normalized product model (TikRadarProduct). */
 export interface NormalizedProduct {
@@ -52,7 +75,10 @@ export interface ProductSearchResult {
   /** Provider round-trip in milliseconds. */
   durationMs: number;
   items: NormalizedProduct[];
+  /** Cost/limit diagnostics — never contains credentials. */
+  diagnostics: ProductSearchDiagnostics;
 }
+
 
 export type ProviderErrorCode =
   "not_configured" | "timeout" | "provider_error" | "invalid_response" | "invalid_params";
