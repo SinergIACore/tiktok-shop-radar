@@ -132,6 +132,7 @@ export function validateSearchInput(raw: unknown): Required<DiscoverySearchInput
       type,
       query: null,
       nicheKey: nicheKey || null,
+      market: parseMarket(input["market"]),
       terms,
       active: input["active"] === false ? false : true,
     };
@@ -147,6 +148,7 @@ export function validateSearchInput(raw: unknown): Required<DiscoverySearchInput
     type,
     query,
     nicheKey: null,
+    market: parseMarket(input["market"]),
     terms: [query],
     active: input["active"] === false ? false : true,
   };
@@ -192,6 +194,9 @@ export function validateSearchPatch(raw: unknown): DiscoverySearchPatch {
     }
     patch.nicheKey = nicheKey || null;
   }
+  if (input["market"] !== undefined) {
+    patch.market = parseMarket(input["market"]);
+  }
   if (input["active"] !== undefined) {
     if (typeof input["active"] !== "boolean") {
       throw new DiscoveryError("validation_error", "Campo active deve ser booleano.");
@@ -206,7 +211,11 @@ export function validateSearchPatch(raw: unknown): DiscoverySearchPatch {
 }
 
 /** Ad-hoc (unsaved) quick search: keyword or product_name only. */
-export function validateQuickSearch(raw: unknown): { type: SearchType; query: string } {
+export function validateQuickSearch(raw: unknown): {
+  type: SearchType;
+  query: string;
+  market: string;
+} {
   const input = (raw ?? {}) as Record<string, unknown>;
   const type = TYPES.find((value) => value === input["type"]) ?? "keyword";
   if (type === "niche") {
@@ -220,5 +229,5 @@ export function validateQuickSearch(raw: unknown): { type: SearchType; query: st
   if (query.length > MAX_QUERY_LENGTH) {
     throw new DiscoveryError("validation_error", "Query muito longa.");
   }
-  return { type, query };
+  return { type, query, market: parseMarket(input["market"]) };
 }
