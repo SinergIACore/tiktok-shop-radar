@@ -112,8 +112,7 @@ function TikTokCard() {
             </Button>
             {data && !data.authorizeReady && (
               <p className="mt-2 text-xs text-muted-foreground">
-                Falta definir TIKTOK_SHOP_SERVICE_ID (Partner Center) para abrir a tela de
-                autorização.
+                Falta o identificador de serviço do Partner Center no servidor para abrir a tela de autorização.
               </p>
             )}
           </div>
