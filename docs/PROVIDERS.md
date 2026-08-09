@@ -98,3 +98,29 @@ não muda.
 | `APIFY_API_TOKEN`        | sim         | Token da conta Apify               |
 | `APIFY_PRODUCT_ACTOR_ID` | sim         | Actor, ex. `username~actor-name`   |
 | `APIFY_TIMEOUT_MS`       | não         | Timeout da chamada (padrão 120000) |
+
+## Input real enviado ao Actor (02C.2B)
+
+```json
+{
+  "keywords": ["women dress"],
+  "keywordSortBy": "best_sellers",
+  "maxProductsPerSource": 5,
+  "country": "US",
+  "includeCreatorCount": false,
+  "includeFirstSeen": true,
+  "outputDescription": false,
+  "outputVariants": false,
+  "outputSeller*": false
+}
+```
+
+- `maxProductsPerSource` é obrigatório: sem ele o Actor coleta 50 produtos por
+  keyword e cobra por todos.
+- `keywordSortBy` aceita `default | best_sellers | newest | price_asc |
+  price_desc`. Usamos `best_sellers` na Discovery.
+- **Mercado**: o Actor expõe somente `country`, com enum `["US"]`. Não existe
+  `region`/`market`. Nenhum workaround é aplicado — mercados não suportados são
+  rejeitados na validação.
+- **Não existem** filtros de origem `minSold`, `minReviews` ou `minRating`: o
+  corte comercial é local, em `src/server/discovery/quality-filter.ts`.
