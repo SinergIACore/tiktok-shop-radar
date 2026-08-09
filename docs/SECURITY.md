@@ -38,3 +38,14 @@
 - A imagem final copia somente `.output/`; código-fonte, `node_modules` de
   desenvolvimento e histórico Git ficam fora do runtime, e o processo roda com o
   usuário não-root `node`.
+
+## Estado atual (Etapa TikTok Oficial 01)
+
+- `TIKTOK_SHOP_APP_KEY`, `TIKTOK_SHOP_APP_SECRET`, `TIKTOK_SHOP_REDIRECT_URI` e
+  `TIKTOK_TOKEN_ENCRYPTION_KEY` são lidas apenas dentro de handlers/módulos
+  server-only. Nenhuma variável `VITE_TIKTOK*` existe (teste automatizado L).
+- O App Secret nunca é devolvido ao frontend nem aparece em log; a URL de troca
+  de token (que o contém) nunca é logada.
+- Access/refresh tokens são gravados na tabela `tiktok_authorizations` sempre
+  cifrados com AES-256-GCM; nunca em `localStorage`, nunca em resposta HTTP.
+- Logs do OAuth registram apenas status, store e identidade autorizada.

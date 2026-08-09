@@ -195,3 +195,20 @@ apenas registra **por qual pesquisa e termo** ele apareceu.
 Coluna `market text NOT NULL DEFAULT 'US'` + índice `idx_discovery_searches_market`.
 Guarda o mercado (país TikTok Shop) escolhido na pesquisa salva. Valores são
 validados na aplicação contra o catálogo real suportado pelo provider.
+
+## Migration 0004 — `tiktok_authorizations` (Etapa TikTok Oficial 01)
+
+Tabela isolada, mínima e sem relação com as tabelas existentes:
+
+| Coluna | Tipo | Observação |
+| ------ | ---- | ---------- |
+| `id` | bigserial | PK |
+| `authorization_type` | text | ex.: `creator_affiliate` |
+| `market` | text | pode ser null |
+| `access_token_encrypted` | text | AES-256-GCM (base64) |
+| `refresh_token_encrypted` | text | nullable |
+| `access_token_expires_at` | timestamptz | nullable |
+| `refresh_token_expires_at` | timestamptz | nullable |
+| `created_at` / `updated_at` | timestamptz | default now() |
+
+Nenhum token é gravado em texto aberto. Aplicar com `npm run migrate`.

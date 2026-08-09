@@ -269,3 +269,27 @@ Removido: nada.
 > O Actor aceita vários `keywords` num único run, mas isso removeria a
 > atribuição termo→produto exigida por `ProductDiscovery`. Consolidação fica
 > pendente para quando a atribuição por termo puder ser preservada.
+
+## Etapa TikTok Oficial 01 — provider oficial em paralelo
+
+- **Novo provider server-only** `TikTokShopOfficialProvider`
+  (`src/services/providers/product-data/providers/tiktok-official/`),
+  implementando a MESMA interface `ProductDataProvider`. O provider atual
+  (Apify) continua sendo o padrão.
+- **Feature flag** `DISCOVERY_PROVIDER` em `index.server.ts`
+  (`apify` padrão | `tiktok_official` opt-in). Nada disso existe no frontend.
+- **OAuth**: `GET /api/auth/tiktok/callback` recebe o `auth_code`, troca por
+  token pelo adapter isolado `src/server/tiktok/oauth.server.ts` e persiste
+  server-side com AES-256-GCM. Nenhum token vai para o navegador nem para logs.
+- **LAB de prova**: `POST /api/labs/tiktok-official/product-search`
+  (`pageSize <= 5`, sem persistência no banco principal).
+- **Migration 0004** `tiktok_authorizations` (tabela isolada, tokens cifrados).
+- **Normalização oficial**: `units_sold`, `sale_region`, `sales_price`,
+  `original_price`, `commission.*`, `shop.name`, `category_chains`,
+  `shop_ads_commission`. NULL nunca vira zero.
+- **Testes**: 15 novos casos (normalização, units_sold, sale_region, preço,
+  comissão, NULLs, limite 5, erro de autorização, token ausente, provider atual
+  intacto, ausência de chamada TikTok sem opt-in, credenciais fora do client).
+  Total **98 passando**. Build limpo.
+- **Não alterado**: Dashboard, `/products`, snapshots, histórico, métricas,
+  motor de tendência, Discovery, provider Apify, migrations 0001–0003.

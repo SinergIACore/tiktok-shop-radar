@@ -398,3 +398,24 @@ nunca é chamado aqui. `limit` 1–100 (default 50).
       "searchType": "niche", "term": "lip gloss", "discoveredAt": "…" }
   ] }
 ```
+
+## Etapa TikTok Oficial 01
+
+### `GET /api/auth/tiktok/callback`
+
+Recebe `code`/`auth_code` do TikTok, troca por token server-side, persiste
+cifrado e redireciona para `/settings?tiktok=connected` ou
+`/settings?tiktok=error&reason=...`. Nunca retorna token.
+
+### `POST /api/labs/tiktok-official/product-search`
+
+Prova controlada, sem persistência.
+
+```json
+{ "keywords": ["vestido feminino"], "pageSize": 5, "sortField": "units_sold", "sortOrder": "DESC" }
+```
+
+`pageSize` é limitado a 5. Resposta inclui `items` normalizados e
+`diagnostics.saleRegions` (usado para comprovar o mercado BR).
+Erros: 400 validação, 503 sem credenciais/autorização, 401 autorização recusada,
+504 timeout, 502 falha do provider.
