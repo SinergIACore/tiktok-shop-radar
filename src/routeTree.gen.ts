@@ -28,6 +28,7 @@ import { Route as ApiProductsIndexRouteImport } from './routes/api/products/inde
 import { Route as ApiProductsProductIdRouteImport } from './routes/api/products/$productId'
 import { Route as ApiProductsSearchRouteImport } from './routes/api/products/search'
 import { Route as ApiAuthTiktokCallbackRouteImport } from './routes/api/auth/tiktok/callback'
+import { Route as ApiAuthTiktokConnectRouteImport } from './routes/api/auth/tiktok/connect'
 import { Route as ApiDiscoveryProductsProductIdRouteImport } from './routes/api/discovery/products/$productId'
 import { Route as ApiDiscoverySearchesIndexRouteImport } from './routes/api/discovery/searches/index'
 import { Route as ApiDiscoverySearchesSearchIdRouteImport } from './routes/api/discovery/searches/$searchId'
@@ -135,6 +136,11 @@ const ApiAuthTiktokCallbackRoute = ApiAuthTiktokCallbackRouteImport.update({
   path: '/api/auth/tiktok/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthTiktokConnectRoute = ApiAuthTiktokConnectRouteImport.update({
+  id: '/api/auth/tiktok/connect',
+  path: '/api/auth/tiktok/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDiscoveryProductsProductIdRoute =
   ApiDiscoveryProductsProductIdRouteImport.update({
     id: '/api/discovery/products/$productId',
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/products/': typeof ApiProductsIndexRoute
   '/api/auth/tiktok/callback': typeof ApiAuthTiktokCallbackRoute
+  '/api/auth/tiktok/connect': typeof ApiAuthTiktokConnectRoute
   '/api/discovery/products/$productId': typeof ApiDiscoveryProductsProductIdRoute
   '/api/discovery/searches/$searchId': typeof ApiDiscoverySearchesSearchIdRouteWithChildren
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/products': typeof ApiProductsIndexRoute
   '/api/auth/tiktok/callback': typeof ApiAuthTiktokCallbackRoute
+  '/api/auth/tiktok/connect': typeof ApiAuthTiktokConnectRoute
   '/api/discovery/products/$productId': typeof ApiDiscoveryProductsProductIdRoute
   '/api/discovery/searches/$searchId': typeof ApiDiscoverySearchesSearchIdRouteWithChildren
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
@@ -283,6 +291,7 @@ export interface FileRoutesById {
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/products/': typeof ApiProductsIndexRoute
   '/api/auth/tiktok/callback': typeof ApiAuthTiktokCallbackRoute
+  '/api/auth/tiktok/connect': typeof ApiAuthTiktokConnectRoute
   '/api/discovery/products/$productId': typeof ApiDiscoveryProductsProductIdRoute
   '/api/discovery/searches/$searchId': typeof ApiDiscoverySearchesSearchIdRouteWithChildren
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
@@ -317,6 +326,7 @@ export interface FileRouteTypes {
     | '/api/products/search'
     | '/api/products/'
     | '/api/auth/tiktok/callback'
+    | '/api/auth/tiktok/connect'
     | '/api/discovery/products/$productId'
     | '/api/discovery/searches/$searchId'
     | '/api/labs/products/ingest'
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/api/products/search'
     | '/api/products'
     | '/api/auth/tiktok/callback'
+    | '/api/auth/tiktok/connect'
     | '/api/discovery/products/$productId'
     | '/api/discovery/searches/$searchId'
     | '/api/labs/products/ingest'
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | '/api/products/search'
     | '/api/products/'
     | '/api/auth/tiktok/callback'
+    | '/api/auth/tiktok/connect'
     | '/api/discovery/products/$productId'
     | '/api/discovery/searches/$searchId'
     | '/api/labs/products/ingest'
@@ -414,6 +426,7 @@ export interface RootRouteChildren {
   ApiProductsSearchRoute: typeof ApiProductsSearchRoute
   ApiProductsIndexRoute: typeof ApiProductsIndexRoute
   ApiAuthTiktokCallbackRoute: typeof ApiAuthTiktokCallbackRoute
+  ApiAuthTiktokConnectRoute: typeof ApiAuthTiktokConnectRoute
   ApiDiscoveryProductsProductIdRoute: typeof ApiDiscoveryProductsProductIdRoute
   ApiDiscoverySearchesSearchIdRoute: typeof ApiDiscoverySearchesSearchIdRouteWithChildren
   ApiLabsProductsIngestRoute: typeof ApiLabsProductsIngestRoute
@@ -561,6 +574,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthTiktokCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/tiktok/connect': {
+      id: '/api/auth/tiktok/connect'
+      path: '/api/auth/tiktok/connect'
+      fullPath: '/api/auth/tiktok/connect'
+      preLoaderRoute: typeof ApiAuthTiktokConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/discovery/products/$productId': {
       id: '/api/discovery/products/$productId'
       path: '/api/discovery/products/$productId'
@@ -675,6 +695,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiProductsSearchRoute: ApiProductsSearchRoute,
   ApiProductsIndexRoute: ApiProductsIndexRoute,
   ApiAuthTiktokCallbackRoute: ApiAuthTiktokCallbackRoute,
+  ApiAuthTiktokConnectRoute: ApiAuthTiktokConnectRoute,
   ApiDiscoveryProductsProductIdRoute: ApiDiscoveryProductsProductIdRoute,
   ApiDiscoverySearchesSearchIdRoute:
     ApiDiscoverySearchesSearchIdRouteWithChildren,
