@@ -12,7 +12,8 @@ import {
   type ProductSearchResult,
 } from "@/services/providers/product-data/types/external-product.types";
 
-function product(id: string, soldCount = 10): NormalizedProduct {
+// Default fixture is commercially qualified (soldCount >= 100).
+function product(id: string, soldCount = 500, reviewCount: number | null = null): NormalizedProduct {
   return {
     id,
     name: `Produto ${id}`,
@@ -23,7 +24,7 @@ function product(id: string, soldCount = 10): NormalizedProduct {
     currency: "USD",
     soldCount,
     rating: null,
-    reviewCount: null,
+    reviewCount,
     sellerName: "Shop",
     sellerVideoCount: null,
     gmvContribution: null,
@@ -56,7 +57,20 @@ class FakeProvider implements ProductDataProvider {
     const entry = this.byTerm[params.keyword];
     if (entry === "error") throw new ProviderError("timeout", "boom", 504);
     const items = (entry ?? []).slice(0, params.limit ?? 10);
-    return { source: this.name, query: params, count: items.length, durationMs: 1, items };
+    return {
+      source: this.name,
+      query: params,
+      count: items.length,
+      durationMs: 1,
+      items,
+      diagnostics: {
+        requestedLimit: params.limit ?? 10,
+        providerLimit: params.limit ?? 10,
+        receivedCount: (entry ?? []).length,
+        sort: params.sort ?? "relevance",
+        market: params.country ?? null,
+      },
+    };
   }
 }
 
