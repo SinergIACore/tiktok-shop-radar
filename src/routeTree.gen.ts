@@ -34,6 +34,7 @@ import { Route as ApiLabsProductsIndexRouteImport } from './routes/api/labs/prod
 import { Route as ApiLabsProductsIngestRouteImport } from './routes/api/labs/products/ingest'
 import { Route as ApiLabsProductsMetricsRouteImport } from './routes/api/labs/products/metrics'
 import { Route as ApiLabsProductsTrendsRouteImport } from './routes/api/labs/products/trends'
+import { Route as ApiLabsTiktokOfficialProductSearchRouteImport } from './routes/api/labs/tiktok-official/product-search'
 import { Route as ApiDiscoverySearchesSearchIdRunRouteImport } from './routes/api/discovery/searches/$searchId.run'
 import { Route as ApiLabsProductsProductIdHistoryRouteImport } from './routes/api/labs/products/$productId.history'
 import { Route as ApiLabsProductsProductIdTrendRouteImport } from './routes/api/labs/products/$productId.trend'
@@ -166,6 +167,12 @@ const ApiLabsProductsTrendsRoute = ApiLabsProductsTrendsRouteImport.update({
   path: '/api/labs/products/trends',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLabsTiktokOfficialProductSearchRoute =
+  ApiLabsTiktokOfficialProductSearchRouteImport.update({
+    id: '/api/labs/tiktok-official/product-search',
+    path: '/api/labs/tiktok-official/product-search',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiDiscoverySearchesSearchIdRunRoute =
   ApiDiscoverySearchesSearchIdRunRouteImport.update({
     id: '/run',
@@ -209,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
   '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
   '/api/labs/products/trends': typeof ApiLabsProductsTrendsRoute
+  '/api/labs/tiktok-official/product-search': typeof ApiLabsTiktokOfficialProductSearchRoute
   '/api/discovery/searches/': typeof ApiDiscoverySearchesIndexRoute
   '/api/labs/products/': typeof ApiLabsProductsIndexRoute
   '/api/discovery/searches/$searchId/run': typeof ApiDiscoverySearchesSearchIdRunRoute
@@ -239,6 +247,7 @@ export interface FileRoutesByTo {
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
   '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
   '/api/labs/products/trends': typeof ApiLabsProductsTrendsRoute
+  '/api/labs/tiktok-official/product-search': typeof ApiLabsTiktokOfficialProductSearchRoute
   '/api/discovery/searches': typeof ApiDiscoverySearchesIndexRoute
   '/api/labs/products': typeof ApiLabsProductsIndexRoute
   '/api/discovery/searches/$searchId/run': typeof ApiDiscoverySearchesSearchIdRunRoute
@@ -270,6 +279,7 @@ export interface FileRoutesById {
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
   '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
   '/api/labs/products/trends': typeof ApiLabsProductsTrendsRoute
+  '/api/labs/tiktok-official/product-search': typeof ApiLabsTiktokOfficialProductSearchRoute
   '/api/discovery/searches/': typeof ApiDiscoverySearchesIndexRoute
   '/api/labs/products/': typeof ApiLabsProductsIndexRoute
   '/api/discovery/searches/$searchId/run': typeof ApiDiscoverySearchesSearchIdRunRoute
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/api/labs/products/ingest'
     | '/api/labs/products/metrics'
     | '/api/labs/products/trends'
+    | '/api/labs/tiktok-official/product-search'
     | '/api/discovery/searches/'
     | '/api/labs/products/'
     | '/api/discovery/searches/$searchId/run'
@@ -332,6 +343,7 @@ export interface FileRouteTypes {
     | '/api/labs/products/ingest'
     | '/api/labs/products/metrics'
     | '/api/labs/products/trends'
+    | '/api/labs/tiktok-official/product-search'
     | '/api/discovery/searches'
     | '/api/labs/products'
     | '/api/discovery/searches/$searchId/run'
@@ -362,6 +374,7 @@ export interface FileRouteTypes {
     | '/api/labs/products/ingest'
     | '/api/labs/products/metrics'
     | '/api/labs/products/trends'
+    | '/api/labs/tiktok-official/product-search'
     | '/api/discovery/searches/'
     | '/api/labs/products/'
     | '/api/discovery/searches/$searchId/run'
@@ -393,6 +406,7 @@ export interface RootRouteChildren {
   ApiLabsProductsIngestRoute: typeof ApiLabsProductsIngestRoute
   ApiLabsProductsMetricsRoute: typeof ApiLabsProductsMetricsRoute
   ApiLabsProductsTrendsRoute: typeof ApiLabsProductsTrendsRoute
+  ApiLabsTiktokOfficialProductSearchRoute: typeof ApiLabsTiktokOfficialProductSearchRoute
   ApiDiscoverySearchesIndexRoute: typeof ApiDiscoverySearchesIndexRoute
   ApiLabsProductsIndexRoute: typeof ApiLabsProductsIndexRoute
   ApiLabsProductsProductIdHistoryRoute: typeof ApiLabsProductsProductIdHistoryRoute
@@ -576,6 +590,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLabsProductsTrendsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/labs/tiktok-official/product-search': {
+      id: '/api/labs/tiktok-official/product-search'
+      path: '/api/labs/tiktok-official/product-search'
+      fullPath: '/api/labs/tiktok-official/product-search'
+      preLoaderRoute: typeof ApiLabsTiktokOfficialProductSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/discovery/searches/$searchId/run': {
       id: '/api/discovery/searches/$searchId/run'
       path: '/run'
@@ -639,6 +660,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiLabsProductsIngestRoute: ApiLabsProductsIngestRoute,
   ApiLabsProductsMetricsRoute: ApiLabsProductsMetricsRoute,
   ApiLabsProductsTrendsRoute: ApiLabsProductsTrendsRoute,
+  ApiLabsTiktokOfficialProductSearchRoute:
+    ApiLabsTiktokOfficialProductSearchRoute,
   ApiDiscoverySearchesIndexRoute: ApiDiscoverySearchesIndexRoute,
   ApiLabsProductsIndexRoute: ApiLabsProductsIndexRoute,
   ApiLabsProductsProductIdHistoryRoute: ApiLabsProductsProductIdHistoryRoute,
@@ -647,13 +670,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
