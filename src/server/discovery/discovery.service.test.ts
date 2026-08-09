@@ -228,7 +228,7 @@ describe("Stage 02C.2B — efficient discovery (limits, market, commercial filte
     const provider = new FakeProvider({
       dress: [product("strong", 500), product("weak", 3), product("byReviews", 2, 40)],
     });
-    const { service, productStore } = makeService(provider);
+    const { service } = makeService(provider);
 
     const result = await service.run({ search: null, terms: ["dress"] }, DEFAULT_LIMITS);
 
@@ -236,9 +236,7 @@ describe("Stage 02C.2B — efficient discovery (limits, market, commercial filte
     expect(result.run.qualified).toBe(2);
     expect(result.run.discarded).toBe(1);
     expect(result.run.productsCreated).toBe(2);
-    expect(result.productIds).not.toContain(
-      (await productStore.getProductBySource("fake", "weak"))?.id,
-    );
+    expect(result.run.discoveriesCreated).toBe(2);
   });
 
   it("does not create products or discoveries when everything is discarded", async () => {
