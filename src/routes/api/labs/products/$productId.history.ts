@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getProductStore } from "@/server/persistence/index.server";
+
 // Pure, dependency-free rules module: safe to import statically. Importing it
 // dynamically made the SSR bundler build a namespace object with the
 // `__exportAll` helper, which threw at module load in the Node output.
@@ -17,7 +19,6 @@ export const Route = createFileRoute("/api/labs/products/$productId/history")({
         try {
           // Only the store (which may load the pg driver) stays dynamic so it
           // never reaches the client bundle.
-          const { getProductStore } = await import("@/server/persistence/index.server");
           const store = await getProductStore();
           const product = await store.getProduct(params.productId);
           if (!product) {

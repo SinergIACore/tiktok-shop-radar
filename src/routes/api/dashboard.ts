@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getProductReadRepository } from "@/server/read/index.server";
+import { DashboardReadService } from "@/server/dashboard/dashboard-read.service";
+
 import { toDashboardResponse } from "@/lib/dashboard-view-model";
 
 /**
@@ -11,9 +14,6 @@ export const Route = createFileRoute("/api/dashboard")({
     handlers: {
       GET: async () => {
         try {
-          const { getProductReadRepository } = await import("@/server/read/index.server");
-          const { DashboardReadService } =
-            await import("@/server/dashboard/dashboard-read.service");
           const repository = await getProductReadRepository();
           const data = await new DashboardReadService(repository).load();
           return Response.json(toDashboardResponse(data));

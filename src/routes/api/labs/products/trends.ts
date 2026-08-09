@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getProductReadRepository } from "@/server/read/index.server";
+
 // Pure modules: static imports (SSR-safe, no `pg` in the graph).
 import { parseTrendQuery, TrendReadService } from "@/server/intelligence/trend-read.service";
 
@@ -15,7 +17,6 @@ export const Route = createFileRoute("/api/labs/products/trends")({
         try {
           const query = parseTrendQuery(new URL(request.url).searchParams);
           // One dynamic import per statement: keeps the pg driver server-only.
-          const { getProductReadRepository } = await import("@/server/read/index.server");
           const repository = await getProductReadRepository();
           const service = new TrendReadService(repository);
           const items = await service.list(query);

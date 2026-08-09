@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getProductDataProvider } from "@/services/providers/product-data/index.server";
+import { ProductIngestionService } from "@/server/ingestion/product-ingestion.service";
+import { getProductStore } from "@/server/persistence/index.server";
+import { PersistenceError } from "@/server/persistence/types";
+
 import { ProviderError } from "@/services/providers/product-data/types/external-product.types";
 
 /**
@@ -36,8 +41,6 @@ export const Route = createFileRoute("/api/labs/products/ingest")({
           ? Math.min(Math.max(Math.trunc(parsedLimit), 1), MAX_LAB_LIMIT)
           : 5;
 
-        const { getProductDataProvider } =
-          await import("@/services/providers/product-data/index.server");
         const provider = getProductDataProvider();
         if (!provider.isConfigured()) {
           return Response.json(
@@ -80,10 +83,7 @@ export const Route = createFileRoute("/api/labs/products/ingest")({
           // One dynamic import per statement (see history route): Promise.all
           // over dynamic imports makes the SSR bundler emit namespace objects
           // built with the `__exportAll` helper, which fails at runtime.
-          const persistence = await import("@/server/persistence/index.server");
-          const ingestion0 = await import("@/server/ingestion/product-ingestion.service");
-          const ProductIngestionService = ingestion0.ProductIngestionService;
-          const store = await persistence.getProductStore();
+          const store = await getProductStore();
           const service = new ProductIngestionService(store);
           const { productIds, ...ingestion } = await service.ingest(items);
 
@@ -100,7 +100,6 @@ export const Route = createFileRoute("/api/labs/products/ingest")({
             productIds,
           });
         } catch (error) {
-          const { PersistenceError } = await import("@/server/persistence/types");
           if (error instanceof PersistenceError) {
             return Response.json(
               { error: { code: error.code, message: error.message } },

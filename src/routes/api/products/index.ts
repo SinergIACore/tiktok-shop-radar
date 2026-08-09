@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getProductReadRepository } from "@/server/read/index.server";
+
 import { parseProductListQuery } from "@/server/read/list-query";
 import { toProductListViewModel } from "@/lib/product-view-model";
 
@@ -14,7 +16,6 @@ export const Route = createFileRoute("/api/products/")({
       GET: async ({ request }) => {
         const query = parseProductListQuery(new URL(request.url).searchParams);
         try {
-          const { getProductReadRepository } = await import("@/server/read/index.server");
           const repository = await getProductReadRepository();
           const page = await repository.listProductsPage(query);
           return Response.json({

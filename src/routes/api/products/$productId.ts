@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getProductReadRepository } from "@/server/read/index.server";
+
 import { toProductListViewModel, toSnapshotViewModel } from "@/lib/product-view-model";
 
 /** GET /api/products/:productId — product view model + chronological history. */
@@ -8,7 +10,6 @@ export const Route = createFileRoute("/api/products/$productId")({
     handlers: {
       GET: async ({ params }) => {
         try {
-          const { getProductReadRepository } = await import("@/server/read/index.server");
           const repository = await getProductReadRepository();
           const product = await repository.getProductWithMetrics(params.productId);
           if (!product) {
