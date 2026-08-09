@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getDiscoveryStore } from "@/server/discovery/index.server";
+
 import { DiscoveryError } from "@/server/discovery/store-types";
 import { validateSearchPatch } from "@/server/discovery/validation";
 
@@ -13,8 +15,7 @@ export const Route = createFileRoute("/api/discovery/searches/$searchId")({
     handlers: {
       GET: async ({ params }) => {
         try {
-          const discovery = await import("@/server/discovery/index.server");
-          const store = await discovery.getDiscoveryStore();
+          const store = await getDiscoveryStore();
           const search = await store.getSearch(params.searchId);
           if (!search) {
             return Response.json(
@@ -44,8 +45,7 @@ export const Route = createFileRoute("/api/discovery/searches/$searchId")({
 
         try {
           const patch = validateSearchPatch(body);
-          const discovery = await import("@/server/discovery/index.server");
-          const store = await discovery.getDiscoveryStore();
+          const store = await getDiscoveryStore();
           const search = await store.updateSearch(params.searchId, patch);
           if (!search) {
             return Response.json(

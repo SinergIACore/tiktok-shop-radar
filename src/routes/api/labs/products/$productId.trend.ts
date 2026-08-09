@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getProductReadRepository } from "@/server/read/index.server";
+
 import {
   DEFAULT_HISTORY_LIMIT,
   TrendReadService,
@@ -17,7 +19,6 @@ export const Route = createFileRoute("/api/labs/products/$productId/trend")({
           const raw = Number(new URL(request.url).searchParams.get("historyLimit"));
           const historyLimit = Number.isFinite(raw) && raw > 1 ? Math.trunc(raw) : DEFAULT_HISTORY_LIMIT;
 
-          const { getProductReadRepository } = await import("@/server/read/index.server");
           const repository = await getProductReadRepository();
           const service = new TrendReadService(repository);
           const result = await service.getOne(params.productId, Math.min(historyLimit, 200));

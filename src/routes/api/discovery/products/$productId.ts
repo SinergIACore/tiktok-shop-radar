@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getDiscoveryStore } from "@/server/discovery/index.server";
+
 /**
  * GET /api/discovery/products/:productId
  * Discovery origin of a product ("Descoberto por"). Read-only; the external
@@ -14,8 +16,7 @@ export const Route = createFileRoute("/api/discovery/products/$productId")({
         const limit = Number.isFinite(parsed) ? Math.min(Math.max(Math.trunc(parsed), 1), 100) : 50;
 
         try {
-          const discovery = await import("@/server/discovery/index.server");
-          const store = await discovery.getDiscoveryStore();
+          const store = await getDiscoveryStore();
           const discoveries = await store.listDiscoveriesForProduct(params.productId, limit);
           return Response.json({ store: store.name, discoveries });
         } catch {

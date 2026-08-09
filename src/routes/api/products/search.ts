@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getProductDataProvider } from "@/services/providers/product-data/index.server";
+
 import {
   ProviderError,
   type ProductSearchResult,
@@ -32,8 +34,6 @@ export const Route = createFileRoute("/api/products/search")({
           ? Math.min(Math.max(Math.trunc(parsedLimit), 1), 50)
           : 10;
 
-        const { getProductDataProvider } =
-          await import("@/services/providers/product-data/index.server");
         const provider = getProductDataProvider();
 
         if (!provider.isConfigured()) {

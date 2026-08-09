@@ -1,4 +1,5 @@
 import { MemoryProductReadRepository } from "./memory-read-repository";
+import { getProductStore } from "../persistence/index.server";
 import type { ProductReadRepository } from "./types";
 
 /**
@@ -18,7 +19,6 @@ export async function getProductReadRepository(): Promise<ProductReadRepository>
     return postgresSingleton;
   }
   if (!memorySingleton) {
-    const { getProductStore } = await import("../persistence/index.server");
     memorySingleton = new MemoryProductReadRepository(await getProductStore());
   }
   return memorySingleton;

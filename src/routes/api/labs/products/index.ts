@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getProductStore } from "@/server/persistence/index.server";
+
 /** GET /api/labs/products — persisted products (LAB only, no provider call). */
 export const Route = createFileRoute("/api/labs/products/")({
   server: {
     handlers: {
       GET: async () => {
         try {
-          const { getProductStore } = await import("@/server/persistence/index.server");
           const store = await getProductStore();
           return Response.json({ store: store.name, items: await store.listProducts(50) });
         } catch (error) {

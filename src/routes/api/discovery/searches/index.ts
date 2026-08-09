@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getDiscoveryStore } from "@/server/discovery/index.server";
+
 import { DiscoveryError } from "@/server/discovery/store-types";
 import { validateSearchInput } from "@/server/discovery/validation";
 
@@ -21,8 +23,7 @@ export const Route = createFileRoute("/api/discovery/searches/")({
         const activeOnly = url.searchParams.get("activeOnly") === "true";
 
         try {
-          const discovery = await import("@/server/discovery/index.server");
-          const store = await discovery.getDiscoveryStore();
+          const store = await getDiscoveryStore();
           const result = await store.listSearches({ page, limit, activeOnly });
           return Response.json({ store: store.name, ...result });
         } catch (error) {
@@ -52,8 +53,7 @@ export const Route = createFileRoute("/api/discovery/searches/")({
 
         try {
           const input = validateSearchInput(body);
-          const discovery = await import("@/server/discovery/index.server");
-          const store = await discovery.getDiscoveryStore();
+          const store = await getDiscoveryStore();
           const search = await store.createSearch(input);
           return Response.json({ search }, { status: 201 });
         } catch (error) {
