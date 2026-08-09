@@ -52,7 +52,7 @@ const iso = (value: unknown): string =>
 const isoOrNull = (value: unknown): string | null =>
   value === null || value === undefined ? null : iso(value);
 
-const SEARCH_COLS = `id, name, type, query, niche_key, terms, active,
+const SEARCH_COLS = `id, name, type, query, niche_key, market, terms, active,
        created_at, updated_at, last_run_at, run_count`;
 
 function toSearch(row: Record<string, unknown>): DiscoverySearch {
@@ -68,6 +68,7 @@ function toSearch(row: Record<string, unknown>): DiscoverySearch {
     type: String(row["type"]) as SearchType,
     query: (row["query"] as string) ?? null,
     nicheKey: (row["niche_key"] as string) ?? null,
+    market: String(row["market"] ?? "US"),
     terms,
     active: Boolean(row["active"]),
     createdAt: iso(row["created_at"]),
@@ -101,14 +102,15 @@ export class PostgresDiscoveryStore implements DiscoveryStore {
   async createSearch(input: Required<DiscoverySearchInput>): Promise<DiscoverySearch> {
     const pool = await getPool();
     const { rows } = await pool.query(
-      `INSERT INTO discovery_searches (name, type, query, niche_key, terms, active)
-       VALUES ($1, $2, $3, $4, $5::jsonb, $6)
+      `INSERT INTO discovery_searches (name, type, query, niche_key, market, terms, active)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7)
        RETURNING ${SEARCH_COLS}`,
       [
         input.name,
         input.type,
         input.query ?? null,
         input.nicheKey ?? null,
+        input.market,
         JSON.stringify(input.terms ?? []),
         input.active,
       ],
@@ -136,6 +138,7 @@ export class PostgresDiscoveryStore implements DiscoveryStore {
     if (patch.name !== undefined) push("name = $?", patch.name);
     if (patch.query !== undefined) push("query = $?", patch.query);
     if (patch.nicheKey !== undefined) push("niche_key = $?", patch.nicheKey);
+    if (patch.market !== undefined) push("market = $?", patch.market);
     if (patch.terms !== undefined) push("terms = $?::jsonb", JSON.stringify(patch.terms));
     if (patch.active !== undefined) push("active = $?", patch.active);
     if (sets.length === 0) return this.getSearch(id);
