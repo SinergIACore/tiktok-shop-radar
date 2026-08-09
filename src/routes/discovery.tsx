@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { AlertTriangle, Compass, Play, Search } from "lucide-react";
+import { AlertTriangle, Compass, Hourglass, Loader2, Play, Search } from "lucide-react";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -218,14 +218,29 @@ function DiscoveryPage() {
             onClick={() => quickRun.mutate()}
             disabled={running || quickQuery.trim().length === 0}
           >
-            <Search className="size-4" />
-            {quickRun.isPending ? "Pesquisando..." : "Pesquisar e ingerir"}
+            {quickRun.isPending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Pesquisando...
+              </>
+            ) : (
+              <>
+                <Search className="size-4" />
+                Pesquisar e ingerir
+              </>
+            )}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
           O provider pode retornar resultados semanticamente relacionados: não existe correspondência
           exata garantida por nome.
         </p>
+        {running && (
+          <p className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Hourglass className="size-4 animate-pulse" />
+            Consultando o provider e processando os produtos. Aguarde...
+          </p>
+        )}
       </section>
 
       {/* B) Pesquisa por nicho */}
@@ -287,7 +302,12 @@ function DiscoveryPage() {
                   disabled={running}
                   onClick={() => nicheRun.mutate(niche.key)}
                 >
-                  <Play className="size-4" /> Executar pesquisa
+                  {nicheRun.isPending && nicheRun.variables === niche.key ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Play className="size-4" />
+                  )}
+                  Executar pesquisa
                 </Button>
               </div>
             ))}
@@ -306,6 +326,16 @@ function DiscoveryPage() {
       )}
 
       {/* Resultados da execução */}
+      {running && !result && (
+        <section className="space-y-4 animate-fade-in">
+          <h2 className="font-display text-lg font-semibold">Resultado da execução</h2>
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            Processando resultado da execução...
+          </div>
+        </section>
+      )}
+
       {result && <RunResult data={result} />}
 
       {/* C) Pesquisas salvas */}
@@ -423,7 +453,11 @@ function DiscoveryPage() {
                           disabled={running || !search.active}
                           onClick={() => savedRun.mutate(search.id)}
                         >
-                          Executar
+                          {savedRun.isPending && savedRun.variables === search.id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            "Executar"
+                          )}
                         </Button>
                         <Button
                           size="sm"
