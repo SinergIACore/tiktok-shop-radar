@@ -66,6 +66,19 @@ export interface NormalizedProduct {
   sourceProductId: string | null;
   /** Original provider payload, kept only for debugging in the LAB route. */
   rawMetadata?: ExternalProduct;
+
+  /**
+   * Campos exclusivos do canal oficial TikTok Shop (Open Collaboration).
+   * Opcionais: providers que não os fornecem simplesmente os omitem —
+   * nenhum consumidor existente é afetado. NULL nunca vira zero.
+   */
+  saleRegion?: string | null;
+  originalPrice?: number | null;
+  hasInventory?: boolean | null;
+  commissionRate?: number | null;
+  commissionAmount?: number | null;
+  commissionCurrency?: string | null;
+  shopAdsCommission?: number | null;
 }
 
 export interface ProductSearchResult {

@@ -124,3 +124,50 @@ não muda.
   rejeitados na validação.
 - **Não existem** filtros de origem `minSold`, `minReviews` ou `minRating`: o
   corte comercial é local, em `src/server/discovery/quality-filter.ts`.
+
+## TikTokShopOfficialProvider (Etapa TikTok Oficial 01)
+
+Provider paralelo, server-only, selecionado apenas por `DISCOVERY_PROVIDER=tiktok_official`.
+
+**Endpoint documentado** (scope `creator.affiliate_collaboration.read`):
+
+```
+POST /affiliate_creator/202405/open_collaborations/products/search
+Host: https://open-api.tiktokglobalshop.com
+x-tts-access-token: <access token do criador autorizado>
+```
+
+Ordenação suportada: `units_sold | commission | commission_rate | product_sales_price`.
+
+**Mapeamento oficial → modelo interno:**
+
+| Campo oficial        | Campo normalizado    |
+| -------------------- | -------------------- |
+| `id`                 | `id`, `sourceProductId` |
+| `title`              | `name`               |
+| `main_image_url`     | `thumbnail`          |
+| `detail_link`        | `productUrl`         |
+| `category_chains[]`  | `category`           |
+| `sales_price`        | `price`              |
+| `original_price`     | `originalPrice`      |
+| `units_sold`         | `soldCount`          |
+| `sale_region`        | `saleRegion`, `countryCode` |
+| `shop.name`          | `sellerName`, `businessName` |
+| `commission.rate`    | `commissionRate`     |
+| `commission.amount`  | `commissionAmount`   |
+| `commission.currency`| `commissionCurrency` |
+| `shop_ads_commission`| `shopAdsCommission`  |
+| `has_inventory`      | `hasInventory`       |
+
+Campos sem equivalente (`rating`, `reviewCount`, `gmvContribution`,
+`creatorCount`) permanecem `null` — nada é inventado.
+
+**PENDÊNCIAS NÃO COMPROVADAS** (isoladas em `signature.ts`, `oauth.server.ts`
+e `TikTokShopOfficialProvider.ts`):
+
+1. Algoritmo exato de assinatura (`sign`) — só é validável com um 200 real.
+2. Nomes exatos dos campos do body de busca (`keyword`/`keywords`, `page_size`,
+   `sort_field`, `sort_order`).
+3. Formato da resposta de token (`access_token_expire_in` etc.).
+4. Disponibilidade real do mercado BR (`sale_region = BR`) — precisa de
+   resposta real da API para ser considerada aprovada.

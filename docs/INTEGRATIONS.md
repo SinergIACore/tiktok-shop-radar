@@ -21,3 +21,11 @@ Detalhes de endpoint, Actor, custo e substituição: `PROVIDERS.md`.
 Cada integração será acessada por meio de um provider em
 `src/services/providers/`, nunca diretamente por componentes. Chamadas que
 exijam segredos deverão ocorrer no servidor.
+
+## TikTok Shop Open API (oficial) — Etapa TikTok Oficial 01
+
+| Integração              | Finalidade                                   | Status |
+| ----------------------- | -------------------------------------------- | ------ |
+| TikTok Shop Open API    | Open Collaboration Products (scope creator)  | prova controlada, opt-in por `DISCOVERY_PROVIDER=tiktok_official` |
+
+Adicionada em paralelo: o provider Apify continua sendo o padrão da aplicação.

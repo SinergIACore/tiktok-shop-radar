@@ -27,6 +27,7 @@ import { Route as ApiDiscoveryQuickSearchRouteImport } from './routes/api/discov
 import { Route as ApiProductsIndexRouteImport } from './routes/api/products/index'
 import { Route as ApiProductsProductIdRouteImport } from './routes/api/products/$productId'
 import { Route as ApiProductsSearchRouteImport } from './routes/api/products/search'
+import { Route as ApiAuthTiktokCallbackRouteImport } from './routes/api/auth/tiktok/callback'
 import { Route as ApiDiscoveryProductsProductIdRouteImport } from './routes/api/discovery/products/$productId'
 import { Route as ApiDiscoverySearchesIndexRouteImport } from './routes/api/discovery/searches/index'
 import { Route as ApiDiscoverySearchesSearchIdRouteImport } from './routes/api/discovery/searches/$searchId'
@@ -34,6 +35,7 @@ import { Route as ApiLabsProductsIndexRouteImport } from './routes/api/labs/prod
 import { Route as ApiLabsProductsIngestRouteImport } from './routes/api/labs/products/ingest'
 import { Route as ApiLabsProductsMetricsRouteImport } from './routes/api/labs/products/metrics'
 import { Route as ApiLabsProductsTrendsRouteImport } from './routes/api/labs/products/trends'
+import { Route as ApiLabsTiktokOfficialProductSearchRouteImport } from './routes/api/labs/tiktok-official/product-search'
 import { Route as ApiDiscoverySearchesSearchIdRunRouteImport } from './routes/api/discovery/searches/$searchId.run'
 import { Route as ApiLabsProductsProductIdHistoryRouteImport } from './routes/api/labs/products/$productId.history'
 import { Route as ApiLabsProductsProductIdTrendRouteImport } from './routes/api/labs/products/$productId.trend'
@@ -128,6 +130,11 @@ const ApiProductsSearchRoute = ApiProductsSearchRouteImport.update({
   path: '/api/products/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthTiktokCallbackRoute = ApiAuthTiktokCallbackRouteImport.update({
+  id: '/api/auth/tiktok/callback',
+  path: '/api/auth/tiktok/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDiscoveryProductsProductIdRoute =
   ApiDiscoveryProductsProductIdRouteImport.update({
     id: '/api/discovery/products/$productId',
@@ -166,6 +173,12 @@ const ApiLabsProductsTrendsRoute = ApiLabsProductsTrendsRouteImport.update({
   path: '/api/labs/products/trends',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLabsTiktokOfficialProductSearchRoute =
+  ApiLabsTiktokOfficialProductSearchRouteImport.update({
+    id: '/api/labs/tiktok-official/product-search',
+    path: '/api/labs/tiktok-official/product-search',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiDiscoverySearchesSearchIdRunRoute =
   ApiDiscoverySearchesSearchIdRunRouteImport.update({
     id: '/run',
@@ -204,11 +217,13 @@ export interface FileRoutesByFullPath {
   '/api/products/$productId': typeof ApiProductsProductIdRoute
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/products/': typeof ApiProductsIndexRoute
+  '/api/auth/tiktok/callback': typeof ApiAuthTiktokCallbackRoute
   '/api/discovery/products/$productId': typeof ApiDiscoveryProductsProductIdRoute
   '/api/discovery/searches/$searchId': typeof ApiDiscoverySearchesSearchIdRouteWithChildren
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
   '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
   '/api/labs/products/trends': typeof ApiLabsProductsTrendsRoute
+  '/api/labs/tiktok-official/product-search': typeof ApiLabsTiktokOfficialProductSearchRoute
   '/api/discovery/searches/': typeof ApiDiscoverySearchesIndexRoute
   '/api/labs/products/': typeof ApiLabsProductsIndexRoute
   '/api/discovery/searches/$searchId/run': typeof ApiDiscoverySearchesSearchIdRunRoute
@@ -234,11 +249,13 @@ export interface FileRoutesByTo {
   '/api/products/$productId': typeof ApiProductsProductIdRoute
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/products': typeof ApiProductsIndexRoute
+  '/api/auth/tiktok/callback': typeof ApiAuthTiktokCallbackRoute
   '/api/discovery/products/$productId': typeof ApiDiscoveryProductsProductIdRoute
   '/api/discovery/searches/$searchId': typeof ApiDiscoverySearchesSearchIdRouteWithChildren
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
   '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
   '/api/labs/products/trends': typeof ApiLabsProductsTrendsRoute
+  '/api/labs/tiktok-official/product-search': typeof ApiLabsTiktokOfficialProductSearchRoute
   '/api/discovery/searches': typeof ApiDiscoverySearchesIndexRoute
   '/api/labs/products': typeof ApiLabsProductsIndexRoute
   '/api/discovery/searches/$searchId/run': typeof ApiDiscoverySearchesSearchIdRunRoute
@@ -265,11 +282,13 @@ export interface FileRoutesById {
   '/api/products/$productId': typeof ApiProductsProductIdRoute
   '/api/products/search': typeof ApiProductsSearchRoute
   '/api/products/': typeof ApiProductsIndexRoute
+  '/api/auth/tiktok/callback': typeof ApiAuthTiktokCallbackRoute
   '/api/discovery/products/$productId': typeof ApiDiscoveryProductsProductIdRoute
   '/api/discovery/searches/$searchId': typeof ApiDiscoverySearchesSearchIdRouteWithChildren
   '/api/labs/products/ingest': typeof ApiLabsProductsIngestRoute
   '/api/labs/products/metrics': typeof ApiLabsProductsMetricsRoute
   '/api/labs/products/trends': typeof ApiLabsProductsTrendsRoute
+  '/api/labs/tiktok-official/product-search': typeof ApiLabsTiktokOfficialProductSearchRoute
   '/api/discovery/searches/': typeof ApiDiscoverySearchesIndexRoute
   '/api/labs/products/': typeof ApiLabsProductsIndexRoute
   '/api/discovery/searches/$searchId/run': typeof ApiDiscoverySearchesSearchIdRunRoute
@@ -297,11 +316,13 @@ export interface FileRouteTypes {
     | '/api/products/$productId'
     | '/api/products/search'
     | '/api/products/'
+    | '/api/auth/tiktok/callback'
     | '/api/discovery/products/$productId'
     | '/api/discovery/searches/$searchId'
     | '/api/labs/products/ingest'
     | '/api/labs/products/metrics'
     | '/api/labs/products/trends'
+    | '/api/labs/tiktok-official/product-search'
     | '/api/discovery/searches/'
     | '/api/labs/products/'
     | '/api/discovery/searches/$searchId/run'
@@ -327,11 +348,13 @@ export interface FileRouteTypes {
     | '/api/products/$productId'
     | '/api/products/search'
     | '/api/products'
+    | '/api/auth/tiktok/callback'
     | '/api/discovery/products/$productId'
     | '/api/discovery/searches/$searchId'
     | '/api/labs/products/ingest'
     | '/api/labs/products/metrics'
     | '/api/labs/products/trends'
+    | '/api/labs/tiktok-official/product-search'
     | '/api/discovery/searches'
     | '/api/labs/products'
     | '/api/discovery/searches/$searchId/run'
@@ -357,11 +380,13 @@ export interface FileRouteTypes {
     | '/api/products/$productId'
     | '/api/products/search'
     | '/api/products/'
+    | '/api/auth/tiktok/callback'
     | '/api/discovery/products/$productId'
     | '/api/discovery/searches/$searchId'
     | '/api/labs/products/ingest'
     | '/api/labs/products/metrics'
     | '/api/labs/products/trends'
+    | '/api/labs/tiktok-official/product-search'
     | '/api/discovery/searches/'
     | '/api/labs/products/'
     | '/api/discovery/searches/$searchId/run'
@@ -388,11 +413,13 @@ export interface RootRouteChildren {
   ApiProductsProductIdRoute: typeof ApiProductsProductIdRoute
   ApiProductsSearchRoute: typeof ApiProductsSearchRoute
   ApiProductsIndexRoute: typeof ApiProductsIndexRoute
+  ApiAuthTiktokCallbackRoute: typeof ApiAuthTiktokCallbackRoute
   ApiDiscoveryProductsProductIdRoute: typeof ApiDiscoveryProductsProductIdRoute
   ApiDiscoverySearchesSearchIdRoute: typeof ApiDiscoverySearchesSearchIdRouteWithChildren
   ApiLabsProductsIngestRoute: typeof ApiLabsProductsIngestRoute
   ApiLabsProductsMetricsRoute: typeof ApiLabsProductsMetricsRoute
   ApiLabsProductsTrendsRoute: typeof ApiLabsProductsTrendsRoute
+  ApiLabsTiktokOfficialProductSearchRoute: typeof ApiLabsTiktokOfficialProductSearchRoute
   ApiDiscoverySearchesIndexRoute: typeof ApiDiscoverySearchesIndexRoute
   ApiLabsProductsIndexRoute: typeof ApiLabsProductsIndexRoute
   ApiLabsProductsProductIdHistoryRoute: typeof ApiLabsProductsProductIdHistoryRoute
@@ -527,6 +554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProductsSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/tiktok/callback': {
+      id: '/api/auth/tiktok/callback'
+      path: '/api/auth/tiktok/callback'
+      fullPath: '/api/auth/tiktok/callback'
+      preLoaderRoute: typeof ApiAuthTiktokCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/discovery/products/$productId': {
       id: '/api/discovery/products/$productId'
       path: '/api/discovery/products/$productId'
@@ -574,6 +608,13 @@ declare module '@tanstack/react-router' {
       path: '/api/labs/products/trends'
       fullPath: '/api/labs/products/trends'
       preLoaderRoute: typeof ApiLabsProductsTrendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/labs/tiktok-official/product-search': {
+      id: '/api/labs/tiktok-official/product-search'
+      path: '/api/labs/tiktok-official/product-search'
+      fullPath: '/api/labs/tiktok-official/product-search'
+      preLoaderRoute: typeof ApiLabsTiktokOfficialProductSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/discovery/searches/$searchId/run': {
@@ -633,12 +674,15 @@ const rootRouteChildren: RootRouteChildren = {
   ApiProductsProductIdRoute: ApiProductsProductIdRoute,
   ApiProductsSearchRoute: ApiProductsSearchRoute,
   ApiProductsIndexRoute: ApiProductsIndexRoute,
+  ApiAuthTiktokCallbackRoute: ApiAuthTiktokCallbackRoute,
   ApiDiscoveryProductsProductIdRoute: ApiDiscoveryProductsProductIdRoute,
   ApiDiscoverySearchesSearchIdRoute:
     ApiDiscoverySearchesSearchIdRouteWithChildren,
   ApiLabsProductsIngestRoute: ApiLabsProductsIngestRoute,
   ApiLabsProductsMetricsRoute: ApiLabsProductsMetricsRoute,
   ApiLabsProductsTrendsRoute: ApiLabsProductsTrendsRoute,
+  ApiLabsTiktokOfficialProductSearchRoute:
+    ApiLabsTiktokOfficialProductSearchRoute,
   ApiDiscoverySearchesIndexRoute: ApiDiscoverySearchesIndexRoute,
   ApiLabsProductsIndexRoute: ApiLabsProductsIndexRoute,
   ApiLabsProductsProductIdHistoryRoute: ApiLabsProductsProductIdHistoryRoute,
