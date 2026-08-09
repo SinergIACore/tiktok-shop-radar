@@ -48,8 +48,8 @@ function cleanTerms(raw: unknown): string[] {
   return terms;
 }
 
-export function parseLimits(raw: unknown): DiscoveryRunLimits {
 /**
+
  * Validates the market/country against the REAL Actor `country` enum.
  * Unsupported values are rejected — no silent fallback to another market.
  */
