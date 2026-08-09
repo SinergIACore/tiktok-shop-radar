@@ -1,3 +1,4 @@
+import { DEFAULT_MARKET, findMarket } from "@/config/markets";
 import { findNiche } from "@/config/niches";
 import type {
   DiscoverySearchInput,
@@ -6,6 +7,7 @@ import type {
   SearchType,
 } from "@/types/discovery";
 import { DiscoveryError } from "./store-types";
+
 
 /**
  * Pure validation + cost guards (Stage 02C.2).
