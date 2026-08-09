@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getDiscoveryStore } from "@/server/discovery/index.server";
+import { getProductStore } from "@/server/persistence/index.server";
+import { getProductDataProvider } from "@/services/providers/product-data/index.server";
+import { getProductReadRepository } from "@/server/read/index.server";
+import { DiscoveryService, buildDiscoveryProducts } from "@/server/discovery/discovery.service";
+
 import { DiscoveryError } from "@/server/discovery/store-types";
 import { parseLimits } from "@/server/discovery/validation";
 
@@ -22,16 +28,8 @@ export const Route = createFileRoute("/api/discovery/searches/$searchId/run")({
         try {
           const limits = parseLimits(body);
 
-          // One dynamic import per statement (SSR __exportAll incident).
-          const discoveryStoreModule = await import("@/server/discovery/index.server");
-          const persistence = await import("@/server/persistence/index.server");
-          const providerModule = await import(
-            "@/services/providers/product-data/index.server"
-          );
-          const read = await import("@/server/read/index.server");
-          const serviceModule = await import("@/server/discovery/discovery.service");
 
-          const discoveryStore = await discoveryStoreModule.getDiscoveryStore();
+          const discoveryStore = await getDiscoveryStore();
           const search = await discoveryStore.getSearch(params.searchId);
           if (!search) {
             return Response.json(
@@ -46,9 +44,9 @@ export const Route = createFileRoute("/api/discovery/searches/$searchId/run")({
             );
           }
 
-          const productStore = await persistence.getProductStore();
-          const provider = providerModule.getProductDataProvider();
-          const service = new serviceModule.DiscoveryService(
+          const productStore = await getProductStore();
+          const provider = getProductDataProvider();
+          const service = new DiscoveryService(
             discoveryStore,
             productStore,
             provider,
@@ -57,8 +55,8 @@ export const Route = createFileRoute("/api/discovery/searches/$searchId/run")({
           const result = await service.run({ search, terms: search.terms }, limits);
           const updated = (await discoveryStore.recordRun(search.id, result.run.finishedAt)) ?? search;
 
-          const repository = await read.getProductReadRepository();
-          const products = await serviceModule.buildDiscoveryProducts(
+          const repository = await getProductReadRepository();
+          const products = await buildDiscoveryProducts(
             repository,
             result.productIds,
           );

@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getDiscoveryStore } from "@/server/discovery/index.server";
+import { getProductStore } from "@/server/persistence/index.server";
+import { getProductDataProvider } from "@/services/providers/product-data/index.server";
+import { getProductReadRepository } from "@/server/read/index.server";
+import { DiscoveryService, buildDiscoveryProducts } from "@/server/discovery/discovery.service";
+
 import { DiscoveryError } from "@/server/discovery/store-types";
 import { parseLimits, validateQuickSearch } from "@/server/discovery/validation";
 
@@ -26,26 +32,19 @@ export const Route = createFileRoute("/api/discovery/quick-search")({
           const { type, query } = validateQuickSearch(body);
           const limits = parseLimits({ ...(body as object), maxTermsPerRun: 1 });
 
-          const discoveryStoreModule = await import("@/server/discovery/index.server");
-          const persistence = await import("@/server/persistence/index.server");
-          const providerModule = await import(
-            "@/services/providers/product-data/index.server"
-          );
-          const read = await import("@/server/read/index.server");
-          const serviceModule = await import("@/server/discovery/discovery.service");
 
-          const discoveryStore = await discoveryStoreModule.getDiscoveryStore();
-          const productStore = await persistence.getProductStore();
-          const provider = providerModule.getProductDataProvider();
-          const service = new serviceModule.DiscoveryService(
+          const discoveryStore = await getDiscoveryStore();
+          const productStore = await getProductStore();
+          const provider = getProductDataProvider();
+          const service = new DiscoveryService(
             discoveryStore,
             productStore,
             provider,
           );
 
           const result = await service.run({ search: null, terms: [query] }, limits);
-          const repository = await read.getProductReadRepository();
-          const products = await serviceModule.buildDiscoveryProducts(
+          const repository = await getProductReadRepository();
+          const products = await buildDiscoveryProducts(
             repository,
             result.productIds,
           );
