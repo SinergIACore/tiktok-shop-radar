@@ -8,6 +8,7 @@ import { DiscoveryService, buildDiscoveryProducts } from "@/server/discovery/dis
 
 import { DiscoveryError } from "@/server/discovery/store-types";
 import { parseLimits } from "@/server/discovery/validation";
+import { parseQualityRule } from "@/server/discovery/quality-filter";
 
 /**
  * POST /api/discovery/searches/:searchId/run
