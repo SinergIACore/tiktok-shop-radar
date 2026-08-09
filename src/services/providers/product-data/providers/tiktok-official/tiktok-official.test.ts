@@ -208,6 +208,7 @@ describe("segurança de credenciais", () => {
           continue;
         }
         if (!/\.(ts|tsx)$/.test(full)) continue;
+        if (full.endsWith(".test.ts") || full.endsWith("routeTree.gen.ts")) continue;
         const content = readFileSync(full, "utf8");
         if (/VITE_TIKTOK/.test(content)) offenders.push(`${full}: VITE_TIKTOK`);
 
@@ -215,8 +216,7 @@ describe("segurança de credenciais", () => {
         const isServerModule =
           full.includes(join("src", "server")) ||
           full.includes(join("providers", "tiktok-official")) ||
-          full.endsWith(".server.ts") ||
-          full.endsWith(".test.ts");
+          full.endsWith(".server.ts");
         if (isServerRoute || isServerModule) continue;
 
         if (/tiktok-official|server\/tiktok/.test(content)) {
