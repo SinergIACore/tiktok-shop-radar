@@ -75,7 +75,10 @@ export interface ProductSearchResult {
   /** Provider round-trip in milliseconds. */
   durationMs: number;
   items: NormalizedProduct[];
+  /** Cost/limit diagnostics — never contains credentials. */
+  diagnostics: ProductSearchDiagnostics;
 }
+
 
 export type ProviderErrorCode =
   "not_configured" | "timeout" | "provider_error" | "invalid_response" | "invalid_params";
