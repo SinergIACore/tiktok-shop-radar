@@ -52,7 +52,11 @@ export const Route = createFileRoute("/api/discovery/searches/$searchId/run")({
             provider,
           );
 
-          const result = await service.run({ search, terms: search.terms }, limits);
+          const result = await service.run({ search, terms: search.terms }, limits, {
+            market: search.market,
+            sort: "best_sellers",
+            quality: parseQualityRule((body as { quality?: unknown } | undefined)?.quality),
+          });
           const updated = (await discoveryStore.recordRun(search.id, result.run.finishedAt)) ?? search;
 
           const repository = await getProductReadRepository();
@@ -62,13 +66,14 @@ export const Route = createFileRoute("/api/discovery/searches/$searchId/run")({
           );
 
           console.info(
-            `[discovery] search=${search.id} terms=${result.run.termsExecuted} received=${result.run.received} unique=${result.run.uniqueProducts} errors=${result.errors.length}`,
+            `[discovery] search=${search.id} terms=${result.run.termsExecuted} market=${search.market} received=${result.run.received} qualified=${result.run.qualified} discarded=${result.run.discarded} unique=${result.run.uniqueProducts} errors=${result.errors.length}`,
           );
 
           return Response.json({
             search: updated,
             run: result.run,
             limits: result.limits,
+            diagnostics: result.diagnostics,
             terms: result.terms,
             errors: result.errors,
             products,
