@@ -7,12 +7,32 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+type TikTokState =
+  | "not_configured"
+  | "not_connected"
+  | "connected"
+  | "missing_scopes"
+  | "token_expired"
+  | "token_invalid";
+
 type TikTokStatus = {
   configured: boolean;
-  authorizeReady: boolean;
+  state: TikTokState;
   connected: boolean;
   market: string | null;
   expiresAt: string | null;
+  openId: string | null;
+  grantedScopes: string[];
+  missingScopes: string[];
+};
+
+const STATE_LABEL: Record<TikTokState, string> = {
+  not_configured: "Não configurado",
+  not_connected: "Não conectado",
+  connected: "Conectado",
+  missing_scopes: "Scopes incompletos",
+  token_expired: "Token expirado",
+  token_invalid: "Token inválido ou revogado",
 };
 
 export const Route = createFileRoute("/settings")({
