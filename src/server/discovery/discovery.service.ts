@@ -138,20 +138,27 @@ export class DiscoveryService {
           sort,
         });
         const items = result.items.slice(0, maxProducts);
-        // Commercial cut BEFORE persistence: discarded candidates never
-        // become a Product/ProductSnapshot, they are only logged.
-        const { qualified, discarded } = splitByQuality(items, quality);
-        if (discarded.length > 0) {
+        // Commercial classification BEFORE persistence: only REJECTED
+        // candidates are discarded; STRONG + POSSIBLE are persisted so the
+        // radar keeps working when nothing hits the strong cut.
+        const split = splitByQuality(items, quality);
+        for (const entry of split.rejected) {
           console.info(
-            `[discovery] term=${term} market=${market} discarded=${discarded.length} reason=below_commercial_threshold`,
+            `[discovery] term=${term} market=${market} rejected id=${entry.item.sourceProductId ?? entry.item.id ?? "null"} reason=${entry.reason} ${entry.detail}`,
           );
         }
-        const summary = await this.ingestion.ingest(qualified);
+        for (const entry of split.reasons) {
+          const current = rejectionCounts.get(entry.reason) ?? 0;
+          rejectionCounts.set(entry.reason, current + entry.count);
+        }
+        const summary = await this.ingestion.ingest(split.accepted);
 
         receivedFromProvider += result.diagnostics.receivedCount;
         run.received += items.length;
-        run.qualified += qualified.length;
-        run.discarded += discarded.length;
+        run.strong += split.strong.length;
+        run.possible += split.possible.length;
+        run.qualified += split.accepted.length;
+        run.discarded += split.rejected.length;
         run.productsCreated += summary.productsCreated;
         run.productsUpdated += summary.productsUpdated;
         run.snapshotsCreated += summary.snapshotsCreated;
