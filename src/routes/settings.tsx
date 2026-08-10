@@ -140,9 +140,6 @@ function TikTokCard() {
       </div>
     </div>
   );
-      </div>
-    </div>
-  );
 }
 
 function SettingsPage() {
