@@ -204,6 +204,11 @@ export class DiscoveryService {
       }
     }
 
+    run.rejections = [...rejectionCounts.entries()].map(([reason, count]) => ({
+      reason,
+      label: REJECTION_LABELS[reason],
+      count,
+    }));
     run.uniqueProducts = uniqueProducts.size;
     run.finishedAt = new Date().toISOString();
 
