@@ -1,15 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { AUTHORIZATION_TYPE } from "@/services/providers/product-data/providers/tiktok-official/TikTokShopOfficialProvider";
-import { isTikTokOfficialConfigured } from "@/services/providers/product-data/providers/tiktok-official/tiktok-official.config";
 import { hasTokenEncryptionKey } from "@/server/tiktok/token-crypto";
-import { getTikTokAuthorizationStore } from "@/server/tiktok/index.server";
-import { buildTikTokAuthorizeUrl } from "@/server/tiktok/authorize-url.server";
+import { isTikTokOfficialConfigured } from "@/services/providers/product-data/providers/tiktok-official/tiktok-official.config";
+import { creatorConnectionState } from "@/server/tiktok/creator-api.server";
 
 /**
  * GET /api/integrations/tiktok/status
  *
- * Estado mínimo da integração oficial para a tela de Configurações.
+ * Estado da integração Creator para a tela de Configurações.
  * NUNCA retorna access token, refresh token, app secret ou chave de cripto.
  */
 export const Route = createFileRoute("/api/integrations/tiktok/status")({
@@ -17,29 +15,45 @@ export const Route = createFileRoute("/api/integrations/tiktok/status")({
     handlers: {
       GET: async () => {
         const configured = isTikTokOfficialConfigured() && hasTokenEncryptionKey();
-        const authorizeReady = buildTikTokAuthorizeUrl().ok;
-
-        let connected = false;
-        let market: string | null = null;
-        let expiresAt: string | null = null;
-
-        if (configured) {
-          try {
-            const store = await getTikTokAuthorizationStore();
-            const auth = await store.getLatest(AUTHORIZATION_TYPE);
-            if (auth) {
-              const notExpired =
-                !auth.accessTokenExpiresAt || new Date(auth.accessTokenExpiresAt) > new Date();
-              connected = notExpired;
-              market = auth.market;
-              expiresAt = auth.accessTokenExpiresAt;
-            }
-          } catch {
-            console.error("[tiktok-status] status=store_error");
-          }
+        if (!configured) {
+          return Response.json({
+            configured: false,
+            state: "not_configured",
+            connected: false,
+            market: null,
+            expiresAt: null,
+            openId: null,
+            grantedScopes: [],
+            missingScopes: [],
+          });
         }
 
-        return Response.json({ configured, authorizeReady, connected, market, expiresAt });
+        try {
+          const { state, authorization, missing } = await creatorConnectionState();
+          return Response.json({
+            configured: true,
+            state,
+            connected: state === "connected",
+            market: authorization?.market ?? null,
+            expiresAt: authorization?.accessTokenExpiresAt ?? null,
+            // open_id não é segredo, mas ainda assim vai mascarado.
+            openId: authorization?.openId ? `${authorization.openId.slice(0, 6)}***` : null,
+            grantedScopes: authorization?.grantedScopes ?? [],
+            missingScopes: missing,
+          });
+        } catch {
+          console.error("[tiktok-status] status=store_error");
+          return Response.json({
+            configured: true,
+            state: "token_invalid",
+            connected: false,
+            market: null,
+            expiresAt: null,
+            openId: null,
+            grantedScopes: [],
+            missingScopes: [],
+          });
+        }
       },
     },
   },

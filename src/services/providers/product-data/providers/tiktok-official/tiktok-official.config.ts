@@ -7,7 +7,8 @@
 export interface TikTokOfficialConfig {
   appKey: string;
   appSecret: string;
-  redirectUri: string;
+  /** Opcional no fluxo Creator: o redirect é cadastrado no Partner Center. */
+  redirectUri: string | null;
   /** Base da Open API. Sobrescrevível apenas por env server-side. */
   apiBaseUrl: string;
   /** Base do serviço de autenticação/token. */
@@ -23,19 +24,26 @@ export const DEFAULT_TIKTOK_TIMEOUT_MS = 30_000;
 export const TIKTOK_SCOPE_AFFILIATE_COLLABORATION_READ =
   "creator.affiliate_collaboration.read";
 
+/** Scopes do Affiliate Creator usados pelo TikRadar. */
+export const TIKTOK_REQUIRED_CREATOR_SCOPES = [
+  "creator.affiliate.info",
+  "creator.showcase.read",
+  "creator.video.write",
+] as const;
+
 /** Retorna a config apenas se TODAS as credenciais obrigatórias existirem. */
 export function readTikTokOfficialConfig(): TikTokOfficialConfig | null {
   const appKey = process.env["TIKTOK_SHOP_APP_KEY"];
   const appSecret = process.env["TIKTOK_SHOP_APP_SECRET"];
   const redirectUri = process.env["TIKTOK_SHOP_REDIRECT_URI"];
-  if (!appKey || !appSecret || !redirectUri) return null;
+  if (!appKey || !appSecret) return null;
 
   const timeout = Number(process.env["TIKTOK_SHOP_TIMEOUT_MS"] ?? DEFAULT_TIKTOK_TIMEOUT_MS);
 
   return {
     appKey,
     appSecret,
-    redirectUri,
+    redirectUri: redirectUri ?? null,
     apiBaseUrl: process.env["TIKTOK_SHOP_API_BASE_URL"] ?? DEFAULT_TIKTOK_API_BASE_URL,
     authBaseUrl: process.env["TIKTOK_SHOP_AUTH_BASE_URL"] ?? DEFAULT_TIKTOK_AUTH_BASE_URL,
     timeoutMs: Number.isFinite(timeout) ? timeout : DEFAULT_TIKTOK_TIMEOUT_MS,

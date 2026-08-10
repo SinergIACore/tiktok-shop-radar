@@ -7,12 +7,32 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+type TikTokState =
+  | "not_configured"
+  | "not_connected"
+  | "connected"
+  | "missing_scopes"
+  | "token_expired"
+  | "token_invalid";
+
 type TikTokStatus = {
   configured: boolean;
-  authorizeReady: boolean;
+  state: TikTokState;
   connected: boolean;
   market: string | null;
   expiresAt: string | null;
+  openId: string | null;
+  grantedScopes: string[];
+  missingScopes: string[];
+};
+
+const STATE_LABEL: Record<TikTokState, string> = {
+  not_configured: "Não configurado",
+  not_connected: "Não conectado",
+  connected: "Conectado",
+  missing_scopes: "Scopes incompletos",
+  token_expired: "Token expirado",
+  token_invalid: "Token inválido ou revogado",
 };
 
 export const Route = createFileRoute("/settings")({
@@ -55,6 +75,7 @@ function TikTokCard() {
   const data = status.data;
   const connected = data?.connected ?? false;
   const configured = data?.configured ?? false;
+  const state: TikTokState = data?.state ?? "not_configured";
 
   return (
     <div className="stat-tile flex items-start gap-4 p-5">
@@ -68,28 +89,32 @@ function TikTokCard() {
             <Badge variant="outline" className="text-muted-foreground">
               <Loader2 className="mr-1 size-3 animate-spin" /> Verificando
             </Badge>
-          ) : connected ? (
-            <Badge variant="outline" className="border-primary/40 text-primary">
-              Conectado
-            </Badge>
-          ) : configured ? (
-            <Badge variant="outline" className="text-muted-foreground">
-              API oficial configurada
-            </Badge>
           ) : (
-            <Badge variant="outline" className="text-muted-foreground">
-              Não configurado
+            <Badge
+              variant="outline"
+              className={
+                connected ? "border-primary/40 text-primary" : "text-muted-foreground"
+              }
+            >
+              {STATE_LABEL[state]}
             </Badge>
           )}
         </div>
 
         <p className="mt-1 text-sm text-muted-foreground">
-          Coleta de produtos, vídeos e criadores.
+          Autorização de Creator (Affiliate Creator API).
         </p>
 
-        {connected && (
+        {data && state !== "not_configured" && state !== "not_connected" && (
           <p className="mt-1 text-sm text-muted-foreground">
-            Mercado: <span className="text-foreground">{data?.market ?? "não informado"}</span>
+            Creator: <span className="text-foreground">{data.openId ?? "não informado"}</span>
+            {data.market ? ` · Mercado: ${data.market}` : ""}
+          </p>
+        )}
+
+        {data && data.missingScopes.length > 0 && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Scopes ausentes: {data.missingScopes.join(", ")}
           </p>
         )}
 
@@ -110,11 +135,6 @@ function TikTokCard() {
                 {connected ? "Reconectar" : "Conectar TikTok Shop"}
               </a>
             </Button>
-            {data && !data.authorizeReady && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                Falta o identificador de serviço do Partner Center no servidor para abrir a tela de autorização.
-              </p>
-            )}
           </div>
         )}
       </div>

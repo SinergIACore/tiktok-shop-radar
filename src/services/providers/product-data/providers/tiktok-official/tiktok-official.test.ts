@@ -138,6 +138,9 @@ describe("provider oficial — limites e autorização", () => {
       refreshToken: null,
       accessTokenExpiresAt: null,
       refreshTokenExpiresAt: null,
+      openId: "open-1",
+      userType: 1,
+      grantedScopes: ["creator.affiliate.info"],
     });
     const provider = new TikTokShopOfficialProvider();
     vi.spyOn(
