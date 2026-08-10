@@ -108,6 +108,7 @@ export class DiscoveryService {
     const termResults: DiscoveryTermResult[] = [];
     const errors: { term: string; status: "failed"; message: string }[] = [];
     const uniqueProducts = new Set<string>();
+    const rejectionCounts = new Map<DiscoveryRejectionReason, number>();
     let receivedFromProvider = 0;
 
     const run: DiscoveryRunSummary = {
@@ -115,8 +116,11 @@ export class DiscoveryService {
       finishedAt: startedAt,
       termsExecuted: 0,
       received: 0,
+      strong: 0,
+      possible: 0,
       qualified: 0,
       discarded: 0,
+      rejections: [],
       uniqueProducts: 0,
       productsCreated: 0,
       productsUpdated: 0,
