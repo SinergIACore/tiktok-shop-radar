@@ -12,6 +12,9 @@ export interface TikTokAuthorization {
   refreshToken: string | null;
   accessTokenExpiresAt: string | null;
   refreshTokenExpiresAt: string | null;
+  openId: string | null;
+  userType: number | null;
+  grantedScopes: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +26,9 @@ export interface TikTokAuthorizationInput {
   refreshToken: string | null;
   accessTokenExpiresAt: string | null;
   refreshTokenExpiresAt: string | null;
+  openId: string | null;
+  userType: number | null;
+  grantedScopes: string[];
 }
 
 export interface TikTokAuthorizationStore {
@@ -60,4 +66,9 @@ export class MemoryTikTokAuthorizationStore implements TikTokAuthorizationStore 
 /** Descriptografa o access token de uma autorização persistida. */
 export function readAccessToken(auth: TikTokAuthorization): string {
   return decryptToken(auth.accessToken);
+}
+
+/** Descriptografa o refresh token, quando existir. */
+export function readRefreshToken(auth: TikTokAuthorization): string | null {
+  return auth.refreshToken ? decryptToken(auth.refreshToken) : null;
 }
