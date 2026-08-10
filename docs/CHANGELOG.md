@@ -1,3 +1,14 @@
+## Microetapa 02C.2C — Descoberta em 3 níveis (STRONG / POSSIBLE / REJECTED)
+
+- `quality-filter.ts` deixa de ser um corte binário: agora classifica cada candidato em
+  STRONG (soldCount/reviews acima do corte), POSSIBLE (válido, métricas fracas ou AUSENTES)
+  e REJECTED (sem identidade, sem URL/imagem, dados incoerentes ou zeros explícitos).
+- Métrica ausente (null) nunca é lida como zero.
+- Strings numéricas do provider ("250") são aceitas.
+- POSSIBLE entra na descoberta (fallback), sempre depois dos STRONG.
+- Observabilidade: run agora expõe `strong`, `possible` e `rejections[]` com motivo e contagem;
+  log por termo com requestedLimit/providerLimit/rawReceived e log por item rejeitado.
+
 # CHANGELOG
 
 ## Etapa 02C.1 — Motor de tendência histórica (LAB)

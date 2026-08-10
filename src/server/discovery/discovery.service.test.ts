@@ -11,7 +11,13 @@ import {
   validateSearchInput,
 } from "./validation";
 import { DEFAULT_MARKET } from "@/config/markets";
-import { DEFAULT_QUALITY_RULE, parseQualityRule, qualifies } from "./quality-filter";
+import {
+  DEFAULT_QUALITY_RULE,
+  classifyProduct,
+  parseQualityRule,
+  qualifies,
+  splitByQuality,
+} from "./quality-filter";
 import { MemoryProductStore } from "../persistence/memory-store";
 import type { ProductDataProvider } from "@/services/providers/product-data/ProductDataProvider";
 import {
@@ -27,7 +33,7 @@ function product(id: string, soldCount = 500, reviewCount: number | null = null)
     id,
     name: `Produto ${id}`,
     thumbnail: null,
-    productUrl: null,
+    productUrl: `https://shop.example/${id}`,
     category: null,
     price: 19.9,
     currency: "USD",
@@ -233,22 +239,36 @@ describe("Stage 02C.2B — efficient discovery (limits, market, commercial filte
     const result = await service.run({ search: null, terms: ["dress"] }, DEFAULT_LIMITS);
 
     expect(result.run.received).toBe(3);
-    expect(result.run.qualified).toBe(2);
-    expect(result.run.discarded).toBe(1);
-    expect(result.run.productsCreated).toBe(2);
-    expect(result.run.discoveriesCreated).toBe(2);
+    expect(result.run.strong).toBe(2);
+    expect(result.run.possible).toBe(1);
+    expect(result.run.qualified).toBe(3);
+    expect(result.run.discarded).toBe(0);
+    expect(result.run.productsCreated).toBe(3);
+    expect(result.run.discoveriesCreated).toBe(3);
   });
 
-  it("does not create products or discoveries when everything is discarded", async () => {
+  it("keeps discovery usable when nothing reaches the STRONG cut", async () => {
     const provider = new FakeProvider({ dress: [product("weak", 1), product("weak2", 2)] });
     const { service } = makeService(provider);
 
     const result = await service.run({ search: null, terms: ["dress"] }, DEFAULT_LIMITS);
 
-    expect(result.run.discarded).toBe(2);
+    expect(result.run.strong).toBe(0);
+    expect(result.run.possible).toBe(2);
+    expect(result.run.discarded).toBe(0);
+    expect(result.run.productsCreated).toBe(2);
+    expect(result.productIds).toHaveLength(2);
+  });
+
+  it("does not persist structurally invalid candidates", async () => {
+    const invalid = { ...product("bad", 900), name: null, productUrl: null, thumbnail: null };
+    const provider = new FakeProvider({ dress: [invalid] });
+    const { service } = makeService(provider);
+
+    const result = await service.run({ search: null, terms: ["dress"] }, DEFAULT_LIMITS);
+
+    expect(result.run.discarded).toBe(1);
     expect(result.run.qualified).toBe(0);
-    expect(result.run.productsCreated).toBe(0);
-    expect(result.run.discoveriesCreated).toBe(0);
     expect(result.productIds).toHaveLength(0);
   });
 
@@ -260,8 +280,9 @@ describe("Stage 02C.2B — efficient discovery (limits, market, commercial filte
       quality: { minSoldCount: 10, minReviewCount: 999 },
     });
 
-    expect(result.run.qualified).toBe(1);
-    expect(result.run.discarded).toBe(1);
+    expect(result.run.strong).toBe(1);
+    expect(result.run.possible).toBe(1);
+    expect(result.run.discarded).toBe(0);
   });
 
   it("never leaks provider credentials in diagnostics", async () => {
@@ -300,5 +321,86 @@ describe("Stage 02C.2B — market validation and quality rule parsing", () => {
     expect(qualifies({ soldCount: 100, reviewCount: null })).toBe(true);
     expect(qualifies({ soldCount: null, reviewCount: 20 })).toBe(true);
     expect(qualifies({ soldCount: 99, reviewCount: 19 })).toBe(false);
+  });
+});
+
+describe("Stage 02C.2C — three-tier discovery classification", () => {
+  const base = (over: Partial<NormalizedProduct>): NormalizedProduct => ({
+    ...product("x", 0, 0),
+    ...over,
+  });
+
+  it("classifies a high soldCount as STRONG", () => {
+    expect(classifyProduct(base({ soldCount: 900, reviewCount: null })).tier).toBe("strong");
+  });
+
+  it("classifies a high reviewCount as STRONG", () => {
+    expect(classifyProduct(base({ soldCount: null, reviewCount: 45 })).tier).toBe("strong");
+  });
+
+  it("classifies a valid product with small metrics as POSSIBLE", () => {
+    expect(classifyProduct(base({ soldCount: 12, reviewCount: 3 })).tier).toBe("possible");
+  });
+
+  it("does not treat soldCount null as zero", () => {
+    expect(classifyProduct(base({ soldCount: null, reviewCount: 4 })).tier).toBe("possible");
+  });
+
+  it("does not treat reviewCount null as zero", () => {
+    expect(classifyProduct(base({ soldCount: 7, reviewCount: null })).tier).toBe("possible");
+  });
+
+  it("accepts numeric strings coming from the provider", () => {
+    const parsed = classifyProduct(base({ soldCount: "250" as unknown as number }));
+    expect(parsed.tier).toBe("strong");
+  });
+
+  it("rejects a structurally invalid product", () => {
+    expect(classifyProduct(base({ name: null })).reason).toBe("missing_identity");
+    expect(classifyProduct(base({ productUrl: null, thumbnail: null })).reason).toBe(
+      "missing_link",
+    );
+    expect(classifyProduct(base({ price: -5 })).reason).toBe("invalid_data");
+    expect(classifyProduct(base({ soldCount: 0, reviewCount: 0 })).reason).toBe(
+      "no_commercial_signal",
+    );
+  });
+
+  it("keeps STRONG first and still accepts POSSIBLE when no STRONG exists", () => {
+    const weak = [base({ id: "w1", soldCount: 5, reviewCount: 1 })];
+    const onlyPossible = splitByQuality(weak);
+    expect(onlyPossible.strong).toHaveLength(0);
+    expect(onlyPossible.accepted).toHaveLength(1);
+
+    const mixed = splitByQuality([
+      base({ id: "w2", soldCount: 5, reviewCount: 1 }),
+      base({ id: "s1", soldCount: 800, reviewCount: null }),
+    ]);
+    expect(mixed.accepted[0]?.id).toBe("s1");
+  });
+
+  it("keeps counters mathematically consistent and forwards limit=10", async () => {
+    const provider = new FakeProvider({
+      dress: [
+        base({ id: "s1", soldCount: 800 }),
+        base({ id: "p1", soldCount: 4, reviewCount: null }),
+        base({ id: "r1", name: null }),
+      ],
+    });
+    const { service } = makeService(provider);
+    const result = await service.run(
+      { search: null, terms: ["dress"] },
+      { maxTermsPerRun: 1, maxProductsPerTerm: 10 },
+    );
+
+    expect(provider.calls[0]?.limit).toBe(10);
+    expect(result.run.received).toBe(3);
+    expect(result.run.strong).toBe(1);
+    expect(result.run.possible).toBe(1);
+    expect(result.run.discarded).toBe(1);
+    expect(result.run.strong + result.run.possible + result.run.discarded).toBe(
+      result.run.received,
+    );
+    expect(result.run.rejections[0]?.reason).toBe("missing_identity");
   });
 });

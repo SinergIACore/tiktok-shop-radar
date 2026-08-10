@@ -73,6 +73,10 @@ export interface DiscoveryTermResult {
   term: string;
   status: "ok" | "failed";
   received?: number;
+  /** Candidates with clear commercial signals. */
+  strong?: number;
+  /** Valid candidates with weak or missing metrics (discovery fallback). */
+  possible?: number;
   qualified?: number;
   discarded?: number;
   /** Limit asked by the caller for this term. */
@@ -90,10 +94,16 @@ export interface DiscoveryRunSummary {
   finishedAt: string;
   termsExecuted: number;
   received: number;
-  /** Candidates that passed the commercial filter and were persisted. */
+  /** Candidates with clear commercial signals. */
+  strong: number;
+  /** Valid candidates with weak/missing metrics — still enter discovery. */
+  possible: number;
+  /** strong + possible: everything actually persisted. */
   qualified: number;
-  /** Candidates discarded before persistence (never become a Product). */
+  /** Candidates rejected before persistence (never become a Product). */
   discarded: number;
+  /** Why candidates were rejected, aggregated for the UI. */
+  rejections: { reason: string; label: string; count: number }[];
   uniqueProducts: number;
   productsCreated: number;
   productsUpdated: number;

@@ -8,8 +8,10 @@ import { ProviderError } from "@/services/providers/product-data/types/external-
 import { DEFAULT_MARKET } from "@/config/markets";
 import {
   DEFAULT_QUALITY_RULE,
+  REJECTION_LABELS,
   splitByQuality,
   type DiscoveryQualityRule,
+  type DiscoveryRejectionReason,
 } from "./quality-filter";
 import type { ProductSearchSort } from "@/services/providers/product-data/types/external-product.types";
 import type {
@@ -108,6 +110,7 @@ export class DiscoveryService {
     const termResults: DiscoveryTermResult[] = [];
     const errors: { term: string; status: "failed"; message: string }[] = [];
     const uniqueProducts = new Set<string>();
+    const rejectionCounts = new Map<DiscoveryRejectionReason, number>();
     let receivedFromProvider = 0;
 
     const run: DiscoveryRunSummary = {
@@ -115,8 +118,11 @@ export class DiscoveryService {
       finishedAt: startedAt,
       termsExecuted: 0,
       received: 0,
+      strong: 0,
+      possible: 0,
       qualified: 0,
       discarded: 0,
+      rejections: [],
       uniqueProducts: 0,
       productsCreated: 0,
       productsUpdated: 0,
@@ -137,21 +143,31 @@ export class DiscoveryService {
           country: market,
           sort,
         });
+        console.info(
+          `[discovery] term=${term} market=${market} sort=${sort} requestedLimit=${maxProducts} providerLimit=${result.diagnostics.providerLimit} rawReceived=${result.diagnostics.receivedCount}`,
+        );
         const items = result.items.slice(0, maxProducts);
-        // Commercial cut BEFORE persistence: discarded candidates never
-        // become a Product/ProductSnapshot, they are only logged.
-        const { qualified, discarded } = splitByQuality(items, quality);
-        if (discarded.length > 0) {
+        // Commercial classification BEFORE persistence: only REJECTED
+        // candidates are discarded; STRONG + POSSIBLE are persisted so the
+        // radar keeps working when nothing hits the strong cut.
+        const split = splitByQuality(items, quality);
+        for (const entry of split.rejected) {
           console.info(
-            `[discovery] term=${term} market=${market} discarded=${discarded.length} reason=below_commercial_threshold`,
+            `[discovery] term=${term} market=${market} rejected id=${entry.item.sourceProductId ?? entry.item.id ?? "null"} reason=${entry.reason} ${entry.detail}`,
           );
         }
-        const summary = await this.ingestion.ingest(qualified);
+        for (const entry of split.reasons) {
+          const current = rejectionCounts.get(entry.reason) ?? 0;
+          rejectionCounts.set(entry.reason, current + entry.count);
+        }
+        const summary = await this.ingestion.ingest(split.accepted);
 
         receivedFromProvider += result.diagnostics.receivedCount;
         run.received += items.length;
-        run.qualified += qualified.length;
-        run.discarded += discarded.length;
+        run.strong += split.strong.length;
+        run.possible += split.possible.length;
+        run.qualified += split.accepted.length;
+        run.discarded += split.rejected.length;
         run.productsCreated += summary.productsCreated;
         run.productsUpdated += summary.productsUpdated;
         run.snapshotsCreated += summary.snapshotsCreated;
@@ -174,8 +190,10 @@ export class DiscoveryService {
           term,
           status: "ok",
           received: items.length,
-          qualified: qualified.length,
-          discarded: discarded.length,
+          strong: split.strong.length,
+          possible: split.possible.length,
+          qualified: split.accepted.length,
+          discarded: split.rejected.length,
           requestedLimit: result.diagnostics.requestedLimit,
           providerLimit: result.diagnostics.providerLimit,
           receivedCount: result.diagnostics.receivedCount,
@@ -189,6 +207,11 @@ export class DiscoveryService {
       }
     }
 
+    run.rejections = [...rejectionCounts.entries()].map(([reason, count]) => ({
+      reason,
+      label: REJECTION_LABELS[reason],
+      count,
+    }));
     run.uniqueProducts = uniqueProducts.size;
     run.finishedAt = new Date().toISOString();
 

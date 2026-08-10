@@ -542,7 +542,8 @@ function RunResult({ data }: { data: DiscoveryRunResponse }) {
       <h2 className="font-display text-lg font-semibold">Resultado da execução</h2>
       <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
         <Stat label="Recebidos" value={String(run.received)} />
-        <Stat label="Qualificados" value={String(run.qualified)} />
+        <Stat label="Sinais fortes" value={String(run.strong)} />
+        <Stat label="Potenciais" value={String(run.possible)} />
         <Stat label="Descartados" value={String(run.discarded)} />
         <Stat label="Produtos únicos" value={String(run.uniqueProducts)} />
         <Stat label="Criados" value={String(run.productsCreated)} />
@@ -562,6 +563,19 @@ function RunResult({ data }: { data: DiscoveryRunResponse }) {
           </>
         ) : null}
       </p>
+
+      {run.rejections?.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-4 text-sm">
+          <p className="font-medium">Descartados: {run.discarded}</p>
+          <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+            {run.rejections.map((entry) => (
+              <li key={entry.reason}>
+                {entry.count} {entry.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {errors.length > 0 && (
         <div className="space-y-1 rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
