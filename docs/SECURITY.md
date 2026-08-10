@@ -49,3 +49,18 @@
 - Access/refresh tokens são gravados na tabela `tiktok_authorizations` sempre
   cifrados com AES-256-GCM; nunca em `localStorage`, nunca em resposta HTTP.
 - Logs do OAuth registram apenas status, store e identidade autorizada.
+
+## Estado atual (Correção Creator OAuth)
+
+- Fluxo oficial: CREATOR AUTHORIZATION (`https://shop.tiktok.com/alliance/creator/auth`).
+  `TIKTOK_SHOP_SERVICE_ID` e o fluxo de Seller Authorization foram removidos.
+- `state` gerado com `crypto.randomBytes(32)`, guardado em registro server-side
+  single-use com TTL de 10 min e amarrado ao navegador por cookie HttpOnly
+  (`SameSite=Lax`, `Secure` em HTTPS). Callback só troca o code após validar.
+- Resposta de token só é aceita com `code === 0` e `user_type === 1` (Creator).
+- `access_token`, `refresh_token`, `open_id`, `user_type`, `granted_scopes` e
+  expirações são persistidos; tokens sempre cifrados com AES-256-GCM.
+- Refresh automático em `/api/v2/token/refresh`, revalidando user_type/open_id.
+- Chamadas Affiliate Creator (`/affiliate_creator/202508/profiles`,
+  `/affiliate_creator/202405/showcases/products`) são exclusivamente
+  server-side, assinadas e com header `x-tts-access-token`.

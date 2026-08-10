@@ -293,3 +293,11 @@ Removido: nada.
   Total **98 passando**. Build limpo.
 - **Não alterado**: Dashboard, `/products`, snapshots, histórico, métricas,
   motor de tendência, Discovery, provider Apify, migrations 0001–0003.
+
+## Correção — OAuth TikTok Creator
+
+- `connect`/`callback` migrados de Seller Authorization para Creator Authorization.
+- `state` anti-CSRF (aleatório, single-use, expirável, ligado a cookie HttpOnly).
+- Validação `code === 0` + `user_type === 1`; persistência de open_id, user_type e granted_scopes (migration 0005).
+- Refresh automático de token e novos endpoints `/api/integrations/tiktok/profile` e `/api/integrations/tiktok/showcase`.
+- `/settings` passa a exibir Conectado / Scopes incompletos / Token expirado / Token inválido / Não conectado; removida a mensagem de `service_id`.
