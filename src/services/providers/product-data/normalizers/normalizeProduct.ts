@@ -3,19 +3,45 @@ import type { ExternalProduct, NormalizedProduct } from "../types/external-produ
 /**
  * Converts an unknown provider payload into the internal product model.
  * Missing fields become null — values are never invented or estimated.
+ *
+ * Stage 02C.2D: some Actors wrap the product in a container object
+ * (`product`, `item`, `data`, `node`). We therefore look up each key in the
+ * root object AND in those containers, in that order. No value is ever
+ * synthesized: an unknown field stays null.
  */
 
-function pick(item: ExternalProduct, keys: string[]): unknown {
-  for (const key of keys) {
+/** Container objects an Actor may nest the real product into. */
+const NESTED_KEYS = ["product", "item", "data", "node", "productInfo", "product_info"] as const;
+
+function scopes(item: ExternalProduct): ExternalProduct[] {
+  const result: ExternalProduct[] = [item];
+  for (const key of NESTED_KEYS) {
     const value = item[key];
-    if (value !== undefined && value !== null && value !== "") return value;
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      result.push(value as ExternalProduct);
+    }
+  }
+  return result;
+}
+
+function pick(item: ExternalProduct, keys: string[]): unknown {
+  for (const scope of scopes(item)) {
+    for (const key of keys) {
+      const value = scope[key];
+      if (value === undefined || value === null) continue;
+      if (typeof value === "string" && value.trim() === "") continue;
+      return value;
+    }
   }
   return undefined;
 }
 
 function asString(value: unknown): string | null {
-  if (typeof value === "string") return value;
-  if (typeof value === "number") return String(value);
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : null;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
   return null;
 }
 
@@ -30,15 +56,22 @@ function asNumber(value: unknown): number | null {
 
 /** First usable URL in imageUrls[], used as thumbnail fallback. */
 function firstImage(item: ExternalProduct): string | null {
-  const list = item["imageUrls"] ?? item["image_urls"] ?? item["images"];
-  if (Array.isArray(list)) {
-    for (const entry of list) {
-      const value = asString(entry);
-      if (value) return value;
+  for (const scope of scopes(item)) {
+    const list = scope["imageUrls"] ?? scope["image_urls"] ?? scope["images"];
+    if (Array.isArray(list)) {
+      for (const entry of list) {
+        const value =
+          asString(entry) ??
+          (entry && typeof entry === "object"
+            ? asString((entry as ExternalProduct)["url"] ?? (entry as ExternalProduct)["urlList"])
+            : null);
+        if (value) return value;
+      }
     }
   }
   return null;
 }
+
 
 export function normalizeProduct(
   item: ExternalProduct,
@@ -47,25 +80,69 @@ export function normalizeProduct(
   includeRaw = false,
 ): NormalizedProduct {
   const sourceProductId = asString(
-    pick(item, ["product_id", "productId", "id", "itemId", "sku_id"]),
+    pick(item, [
+      "product_id",
+      "productId",
+      "id",
+      "itemId",
+      "item_id",
+      "sku_id",
+      "skuId",
+      "productID",
+      "goods_id",
+      "goodsId",
+    ]),
   );
 
   const normalized: NormalizedProduct = {
     id: sourceProductId ?? `${source}-${index}`,
-    name: asString(pick(item, ["title", "name", "product_name", "productName"])),
+    name: asString(
+      pick(item, [
+        "title",
+        "name",
+        "product_name",
+        "productName",
+        "productTitle",
+        "product_title",
+        "goods_name",
+        "goodsName",
+        "displayName",
+        "display_name",
+        "desc",
+      ]),
+    ),
     thumbnail:
       asString(
         pick(item, [
           "mainImage",
           "main_image",
+          "main_image_url",
           "image",
           "imageUrl",
+          "image_url",
           "thumbnail",
+          "thumbnailUrl",
           "cover",
           "coverUrl",
+          "cover_url",
         ]),
       ) ?? firstImage(item),
-    productUrl: asString(pick(item, ["productUrl", "product_url", "url", "link"])),
+    productUrl: asString(
+      pick(item, [
+        "productUrl",
+        "product_url",
+        "detailLink",
+        "detail_link",
+        "detailUrl",
+        "detail_url",
+        "url",
+        "link",
+        "webUrl",
+        "share_url",
+        "shareUrl",
+      ]),
+    ),
+
     category: asString(
       pick(item, ["categoryPath", "category_path", "category", "categoryName", "category_name"]),
     ),
