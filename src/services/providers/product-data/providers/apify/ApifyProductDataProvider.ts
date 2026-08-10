@@ -128,10 +128,11 @@ export class ApifyProductDataProvider implements ProductDataProvider {
       }
 
       const receivedCount = payload.length;
-      const items = normalizeProducts(
-        (payload as ExternalProduct[]).slice(0, providerLimit),
-        this.name,
-      );
+      const rawItems = (payload as ExternalProduct[]).slice(0, providerLimit);
+      const items = normalizeProducts(rawItems, this.name);
+      // TEMPORARY (02C.2D): safe schema observability, no secrets logged.
+      logProviderSample(this.name, rawItems, items);
+
 
       return {
         source: this.name,
