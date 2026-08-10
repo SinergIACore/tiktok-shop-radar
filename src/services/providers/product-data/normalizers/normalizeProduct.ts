@@ -80,25 +80,69 @@ export function normalizeProduct(
   includeRaw = false,
 ): NormalizedProduct {
   const sourceProductId = asString(
-    pick(item, ["product_id", "productId", "id", "itemId", "sku_id"]),
+    pick(item, [
+      "product_id",
+      "productId",
+      "id",
+      "itemId",
+      "item_id",
+      "sku_id",
+      "skuId",
+      "productID",
+      "goods_id",
+      "goodsId",
+    ]),
   );
 
   const normalized: NormalizedProduct = {
     id: sourceProductId ?? `${source}-${index}`,
-    name: asString(pick(item, ["title", "name", "product_name", "productName"])),
+    name: asString(
+      pick(item, [
+        "title",
+        "name",
+        "product_name",
+        "productName",
+        "productTitle",
+        "product_title",
+        "goods_name",
+        "goodsName",
+        "displayName",
+        "display_name",
+        "desc",
+      ]),
+    ),
     thumbnail:
       asString(
         pick(item, [
           "mainImage",
           "main_image",
+          "main_image_url",
           "image",
           "imageUrl",
+          "image_url",
           "thumbnail",
+          "thumbnailUrl",
           "cover",
           "coverUrl",
+          "cover_url",
         ]),
       ) ?? firstImage(item),
-    productUrl: asString(pick(item, ["productUrl", "product_url", "url", "link"])),
+    productUrl: asString(
+      pick(item, [
+        "productUrl",
+        "product_url",
+        "detailLink",
+        "detail_link",
+        "detailUrl",
+        "detail_url",
+        "url",
+        "link",
+        "webUrl",
+        "share_url",
+        "shareUrl",
+      ]),
+    ),
+
     category: asString(
       pick(item, ["categoryPath", "category_path", "category", "categoryName", "category_name"]),
     ),
