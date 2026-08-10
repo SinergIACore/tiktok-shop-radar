@@ -1,4 +1,17 @@
+## Hotfix 02C.2D — Diagnóstico de identidade no normalizer
+
+- `normalizeProduct.ts`: busca de campos passa a olhar também containers aninhados
+  (`product`, `item`, `data`, `node`, `productInfo`); novos fallbacks de `id`,
+  `title`, `productUrl` (`detail_link`, `goods_name`, `share_url`, etc.);
+  strings vazias/whitespace tratadas como ausentes. Nenhum dado é inventado.
+- `debug/logProviderSample.ts`: log TEMPORÁRIO e seguro (máx. 3 itens) com
+  `Object.keys`, tipos e valores truncados dos candidatos a id/título/URL, mais
+  a linha NORMALIZED. Não loga token, headers, cookies nem payload integral.
+- `quality-filter.ts` NÃO foi alterado.
+- Testes: `normalizeProduct.test.ts` com 9 fixtures de identidade.
+
 ## Microetapa 02C.2C — Descoberta em 3 níveis (STRONG / POSSIBLE / REJECTED)
+
 
 - `quality-filter.ts` deixa de ser um corte binário: agora classifica cada candidato em
   STRONG (soldCount/reviews acima do corte), POSSIBLE (válido, métricas fracas ou AUSENTES)
