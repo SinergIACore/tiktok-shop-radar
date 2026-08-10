@@ -8,8 +8,10 @@ import { ProviderError } from "@/services/providers/product-data/types/external-
 import { DEFAULT_MARKET } from "@/config/markets";
 import {
   DEFAULT_QUALITY_RULE,
+  REJECTION_LABELS,
   splitByQuality,
   type DiscoveryQualityRule,
+  type DiscoveryRejectionReason,
 } from "./quality-filter";
 import type { ProductSearchSort } from "@/services/providers/product-data/types/external-product.types";
 import type {
