@@ -239,22 +239,36 @@ describe("Stage 02C.2B — efficient discovery (limits, market, commercial filte
     const result = await service.run({ search: null, terms: ["dress"] }, DEFAULT_LIMITS);
 
     expect(result.run.received).toBe(3);
-    expect(result.run.qualified).toBe(2);
-    expect(result.run.discarded).toBe(1);
-    expect(result.run.productsCreated).toBe(2);
-    expect(result.run.discoveriesCreated).toBe(2);
+    expect(result.run.strong).toBe(2);
+    expect(result.run.possible).toBe(1);
+    expect(result.run.qualified).toBe(3);
+    expect(result.run.discarded).toBe(0);
+    expect(result.run.productsCreated).toBe(3);
+    expect(result.run.discoveriesCreated).toBe(3);
   });
 
-  it("does not create products or discoveries when everything is discarded", async () => {
+  it("keeps discovery usable when nothing reaches the STRONG cut", async () => {
     const provider = new FakeProvider({ dress: [product("weak", 1), product("weak2", 2)] });
     const { service } = makeService(provider);
 
     const result = await service.run({ search: null, terms: ["dress"] }, DEFAULT_LIMITS);
 
-    expect(result.run.discarded).toBe(2);
+    expect(result.run.strong).toBe(0);
+    expect(result.run.possible).toBe(2);
+    expect(result.run.discarded).toBe(0);
+    expect(result.run.productsCreated).toBe(2);
+    expect(result.productIds).toHaveLength(2);
+  });
+
+  it("does not persist structurally invalid candidates", async () => {
+    const invalid = { ...product("bad", 900), name: null, productUrl: null, thumbnail: null };
+    const provider = new FakeProvider({ dress: [invalid] });
+    const { service } = makeService(provider);
+
+    const result = await service.run({ search: null, terms: ["dress"] }, DEFAULT_LIMITS);
+
+    expect(result.run.discarded).toBe(1);
     expect(result.run.qualified).toBe(0);
-    expect(result.run.productsCreated).toBe(0);
-    expect(result.run.discoveriesCreated).toBe(0);
     expect(result.productIds).toHaveLength(0);
   });
 
@@ -266,8 +280,9 @@ describe("Stage 02C.2B — efficient discovery (limits, market, commercial filte
       quality: { minSoldCount: 10, minReviewCount: 999 },
     });
 
-    expect(result.run.qualified).toBe(1);
-    expect(result.run.discarded).toBe(1);
+    expect(result.run.strong).toBe(1);
+    expect(result.run.possible).toBe(1);
+    expect(result.run.discarded).toBe(0);
   });
 
   it("never leaks provider credentials in diagnostics", async () => {
