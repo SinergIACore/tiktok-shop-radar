@@ -1,5 +1,7 @@
 import type { ProductDataProvider } from "../../ProductDataProvider";
 import { normalizeProducts } from "../../normalizers/normalizeProduct";
+import { logProviderSample } from "../../debug/logProviderSample";
+
 import {
   ProviderError,
   type ExternalProduct,
