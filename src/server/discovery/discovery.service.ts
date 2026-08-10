@@ -143,6 +143,9 @@ export class DiscoveryService {
           country: market,
           sort,
         });
+        console.info(
+          `[discovery] term=${term} market=${market} sort=${sort} requestedLimit=${maxProducts} providerLimit=${result.diagnostics.providerLimit} rawReceived=${result.diagnostics.receivedCount}`,
+        );
         const items = result.items.slice(0, maxProducts);
         // Commercial classification BEFORE persistence: only REJECTED
         // candidates are discarded; STRONG + POSSIBLE are persisted so the
